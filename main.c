@@ -1,15 +1,53 @@
-//#include <msp430.h>
-#include <msp430fr5994.h>
+#include <msp430.h>
 #include <stdint.h>
 #include <stdio.h>
 
 //scale the input linearly so it fits
-uint16_t map(uint16_t x, uint16_t in_min, uint16_t in_max, uint16_t out_min, uint16_t out_max) {
+long map(long x, long in_min, long in_max, long out_min, long out_max) {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 
-uint16_t pwmInput; //write mapping function to clamp between 0 and 1000
+volatile uint16_t pwmInput = 0;
+
+void ClockInit() {
+    // configure clock sources
+    CSCTL0_H = CSKEY_H;                     // Unlock CS registers
+    CSCTL1 = DCOFSEL_6;                     // Set DCO = 8MHz
+    CSCTL2 = SELA__VLOCLK | SELS__DCOCLK | SELM__DCOCLK;// Set ACLK=VLO SMCLK=DCO
+    CSCTL3 = DIVA__8 | DIVS__8 | DIVM__8;   // Set all dividers
+    CSCTL0_H = 0;                           // Lock CS registers
+}
+
+void GPIOInit() {
+    // Configure GPIO
+    P1OUT &= ~BIT0;                         // Clear LED to start
+    P1DIR |= BIT0 | BIT2;                   // Set P1.0/P1.2 to output
+    P1SEL0 |= BIT2 | BIT3;                  // Select pin 1.2 as our PWM output
+    P1SEL1 |= BIT3;                         // config pin 1.3 as analog input
+}
+
+void TimerInit() {
+    // configure Timer0_A
+    TA1CCR0 = 1000 - 1;                     // Set period to 1 ms
+    TA1CCTL1 = OUTMOD_7;                    // set output mode to mode 7 "reset-set"
+    TA1CCR1 = 0;                            // Duty cycle of 0%
+    TA1CTL = TASSEL__SMCLK | MC__UP | TACLR;// SMCLK, up mode, clear TAR
+}
+
+void ADCInit() {
+    // Initialize ADC12_A
+    ADC12CTL0 &= ~ADC12ENC;                  // Disable ADC12
+    ADC12CTL0 |= ADC12SHT0_8 | ADC12ON;      // Set sample time
+    ADC12CTL1 |= ADC12SHP;                   // Enable sample timer
+    ADC12CTL3 |= ADC12TCMAP;                 // Enable internal temperature sensor
+    ADC12MCTL0 |= ADC12INCH_3;               // ADC Input P1.3, Vref = AVCC
+    ADC12IER0 |= 0x001;                      // ADC_IFG upon conv result-ADCMEMO
+
+    while(!(REFCTL0 & REFGENRDY));          // Wait for reference generator
+                                            // to settle
+    ADC12CTL0 |= ADC12ENC;
+}
 
 /**
  * main.c
@@ -18,31 +56,32 @@ int main(void)
 {
     WDTCTL = WDTPW + WDTHOLD;   // disable the Watchdog timer for our convenience
 
-    P1DIR |= BIT2; //Set pin 1.2 to the output direction
-    P1SEL0 |= BIT2 | BIT3; //Select pin 1.2 as our PWM output
-    P1SEL1 |= BIT3; // config pin 1.3 to adc input
-    TA0CCR0 = 1000; //Set the period in the Timer A0 Capture/Compare 0 register to 1000 us
-    TA0CCTL1 = OUTMOD_7; //set output mode to mode 7 "reset-set"
-    TA0CCR1 = 500; //The period in microseconds per second that the power is on
-    TA0CTL = TASSEL_2 + MC_1; //TASSEL_2 selects SMCLK as the clock source, MC_! tells it to count up to the value in TA0CCR0
-    __bis_SR_register(LPM0_bits); //Switch to low power mode 0
+    // Initialize the shared reference module
+    // By default, REFMSTR=1 => REFCTL is used to configure the internal reference
+    while(REFCTL0 & REFGENBUSY);            // If ref generator busy, WAIT
+    REFCTL0 |= REFVSEL_0 + REFON;           // Enable internal 1.2V reference
 
-    // Configure ADC12
-    ADC12CTL0 &= ~ADC12ENC;                 // Disable ADC12
-    ADC12CTL0 = ADC12SHT0_2 | ADC12ON;      // Sampling time, S&H=16, ADC12 on
-    ADC12CTL1 = ADC12SHP;                   // Use sampling timer
-    ADC12CTL2 |= ADC12RES_2;                // 12-bit conversion results
-    ADC12IER0 |= ADC12IE0;                  // Enable ADC conversion complete interrupt
-    ADC12MCTL0 |= ADC12INCH_3 | ADC12VRSEL_3; // A1 ADC input select; Voltage reference=1.2V
-    ADC12CTL0 |= ADC12ENC;
+    // Disable the GPIO power-on default high-impedance mode to activate
+    // previously configured port settings
+    PM5CTL0 &= ~LOCKLPM5;
 
-    // interrupts the preferred way for mega-learning mode
-    // loops (polling) easier
+    ClockInit();
+
+    GPIOInit();
+
+    TimerInit();
+
+    ADCInit();
+
+    unsigned int new_duty_cycle = 0;
+    // hang in LPM0 until IE
+    // then update our period
     while(1) {
         ADC12CTL0 |= ADC12SC;               // Sampling and conversion start
-        TA0CCR1 = map(pwmInput, 0, 4095, 0, 1000);
-        printf("%d\n", pwmInput);
-        __no_operation();                   // SET BREAKPOINT HERE
+        __bis_SR_register(LPM0_bits | GIE);
+        new_duty_cycle = map(pwmInput, 0, 4095, 0, 1000);
+        TA1CCR1 = new_duty_cycle;
+        __no_operation();
     }
 }
 
@@ -65,8 +104,11 @@ void __attribute__ ((interrupt(ADC12_B_VECTOR))) ADC12_ISR (void)
         case ADC12IV__ADC12INIFG:  break;   // Vector 10:  ADC12BIN
         case ADC12IV__ADC12IFG0:            // Vector 12:  ADC12MEM0 Interrupt
             pwmInput = ADC12MEM0;             // read out the result register
-            __no_operation();                   // SET BREAKPOINT HERE
-            __bic_SR_register_on_exit(LPM0_bits); // Exit active CPU
+            if (pwmInput >= 0x0AAB)
+                P1OUT |= BIT0;              // P1.0 = 1
+            else
+                P1OUT &= ~BIT0;             // P1.0 = 0
+            __bic_SR_register_on_exit(LPM0_bits | GIE);
             break;                          // Clear CPUOFF bit from 0(SR)
         case ADC12IV__ADC12IFG1:   break;   // Vector 14:  ADC12MEM1
         case ADC12IV__ADC12IFG2:   break;   // Vector 16:  ADC12MEM2
