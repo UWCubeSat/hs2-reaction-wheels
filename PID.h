@@ -14,7 +14,7 @@ namespace reaction_wheels_pid {
 class PID {
     public:
         // Constructor: requires all parameters
-        PID(double &_input, double &_output, double &_setpoint, const double _Kp, const double _Ki, const double _Kd);
+        PID(float &_input, float &_output, float &_setpoint, const float _Kp, const float _Ki, const float _Kd);
 
         // Destructor
         ~PID();
@@ -25,13 +25,13 @@ class PID {
         void Initialize();
 
         // Turns on integral clamping using the given min/max outputs.
-        // Requires min < max, throws exception if not.
-        void ClampingOn(double min, double max);
+        // Requires min < max, does nothing otherwise.
+        void ClampingOn(float min, float max);
         // Turns off integral clamping
         void ClampingOff();
 
         // Turns on a low pass filter for the derivative using the given smoothing factor.
-        void LowPassFilterOn(double factor);
+        void LowPassFilterOn(float factor);
         // Turns off low pass filter.
         void LowPassFilterOff();
 
@@ -39,29 +39,29 @@ class PID {
         void Iterate();
 
     private:
-        double &_input;  // reference to controller input (plant sensor)
-        double &_output;  // reference to controller output (plant command)
-        double &_setpoint;  // reference to setpoint (desired plant result)
+        float &_input;  // reference to controller input (plant sensor)
+        float &_output;  // reference to controller output (plant command)
+        float &_setpoint;  // reference to setpoint (desired plant result)
 
-        const double _Kp;  // proportional gain
-        const double _Ki;  // integral gain
-        const double _Kd;  // derivative gain
+        const float _Kp;  // proportional gain
+        const float _Ki;  // integral gain
+        const float _Kd;  // derivative gain
 
-        double _error_acc;  // error accumulator
-        double _error_prev;  // previous error term (for calculating derivative)
-        double _time_prev;  // time of previous iteration (for calculating derivative)
+        float _error_acc;  // error accumulator
+        float _error_prev;  // previous error term (for calculating derivative)
+        float _time_prev;  // time of previous iteration (for calculating derivative)
 
         // Integral clamping settings
         bool _clamping;  // set true to turn on, false to turn off
-        double _clamp_min;  // minimum saturation value
-        double _clamp_max;  // maximum saturation value
+        float _clamp_min;  // minimum saturation value
+        float _clamp_max;  // maximum saturation value
 
         // Derivative low pass filter settings
         // E_t = (1 - r) * E_t-1 + r * de/dt
         // where r = smoothingFactor, e = error
         bool _low_pass_filter;  // set true to turn on, false to turn off
-        double _smoothing_factor;  // smoothing factor 0-1; smaller for greater smoothing
-        double _exp_moving_average_prev;  // previous exponential moving average term
+        float _smoothing_factor;  // smoothing factor 0-1; smaller for greater smoothing
+        float _exp_moving_average_prev;  // previous exponential moving average term
 
         /*
          * Checks if the controller should be clamped. Clamp if both are true:
@@ -70,7 +70,7 @@ class PID {
          * Does not check if clamping is turned on.
          * Takes in the current error and current integral term.
          */
-        bool ShouldClamp(double error_curr, double integral_term_current);
+        bool ShouldClamp(float error_curr, float integral_term_current);
 };
 
 }  // namespace reaction_wheels_pid
