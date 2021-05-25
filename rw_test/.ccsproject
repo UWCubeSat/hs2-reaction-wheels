@@ -12,6 +12,6 @@
 	<rts value="libc.a"/>
 	<createSlaveProjects value=""/>
 	<templateProperties value="id=com.ti.common.project.core.emptyProjectWithMainTemplate_msp430"/>
-	<filesToOpen value="main.c"/>
+	<filesToOpen value="rw_test.cpp"/>
 	<isTargetManual value="false"/>
 </projectOptions>
