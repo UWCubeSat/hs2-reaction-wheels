@@ -14,7 +14,7 @@ PID::~PID() {
 void PID::Initialize() {
     _error_acc += _setpoint - _input;
     _error_prev = _setpoint - _input;
-    _time_prev = (float) millis();
+    _time_prev = 0;
 }
 
 void PID::ClampingOn(float min, float max) {
@@ -35,7 +35,7 @@ bool PID::ShouldClamp(float error_curr, float integral_term_curr) {
 
 void PID::LowPassFilterOn(float factor) {
     // Set initial derivative exponential moving average to just the derivative
-    float time_curr = (float) millis();
+    float time_curr = 0;
     float time_elapsed = time_curr - _time_prev;
     float error_curr = _setpoint - _input;
     _exp_moving_average_prev = (error_curr - _error_prev) / time_elapsed;
@@ -49,7 +49,7 @@ void PID::LowPassFilterOff() {
 }
 
 void PID::Iterate() {
-    float time_curr = (float) millis();
+    float time_curr = 0;
     float time_elapsed = time_curr - _time_prev;  // time elapsed in milliseconds
     float error_curr = _setpoint - _input;
     float error_rate = (error_curr - _error_prev) / time_elapsed;  // error per time in millis

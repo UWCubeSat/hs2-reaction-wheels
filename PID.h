@@ -1,8 +1,6 @@
 #ifndef REACTION_WHEELS_PROTO_PID_H_
 #define REACTION_WHEELS_PROTO_PID_H_
 
-#include <Arduino.h>
-
 /*
  * This class implements a PID controller given references to input, output, and setpoint
  * and gains for P, I, and D terms. Given an input and a setpoint, it can be used to calculate
