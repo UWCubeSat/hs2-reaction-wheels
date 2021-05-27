@@ -1,6 +1,6 @@
 #include "PID.h"
 
-using namespace reaction_wheels_pid;
+using namespace ReactionWheel;
 
 PID::PID(float &input, float &output, float &setpoint, const float Kp, const float Ki, const float Kd)
 : _input(input), _output(output), _setpoint(setpoint), _Kp(Kp), _Ki(Ki), _Kd(Kd),

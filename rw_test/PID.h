@@ -7,7 +7,7 @@
  * an output to a system (plant) to drive the error to zero.
  */
 
-namespace reaction_wheels_pid {
+namespace ReactionWheel {
 
 class PID {
     public:
@@ -71,6 +71,6 @@ class PID {
         bool ShouldClamp(float error_curr, float integral_term_current);
 };
 
-}  // namespace reaction_wheels_pid
+}  // namespace ReactionWheel
 
 #endif  // _PID_H_

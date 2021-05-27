@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>hs2-reaction-wheels</name>
+	<name>rw_test</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -24,4 +24,10 @@
 		<nature>org.eclipse.cdt.core.ccnature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<variableList>
+		<variable>
+			<name>DSBASE</name>
+			<value>$%7BPROJECT_LOC%7D/dsbase</value>
+		</variable>
+	</variableList>
 </projectDescription>

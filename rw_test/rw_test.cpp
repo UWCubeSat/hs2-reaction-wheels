@@ -9,8 +9,20 @@
 
 #include "rw_test.h"
 #include "PID.h"
+#include "rw.h"
 
 int main(void) {
+    // TODO: fix all this nonsense to use real stuff
+    float input = 0.0f;     // this will be tied to our current RPM from FG
+    float output = 0.0f;    // this will be the new RPM
+    float setpoint = 0.0f;  // based on some dynamics model of the system
+    float kp = 0.0f;        // need to tune these
+    float kd = 0.0f;
+    float ki = 0.0f;
+
+    // constructs a ReactionWheel object to control the Faulhaber motors
+    ReactionWheel::ReactionWheel rw();
+
     // initialize the 5 ports we need:
     //  PWM - analog, motor RPM, out
     //  BRKMOD - digital, brakes, out
@@ -23,6 +35,6 @@ int main(void) {
     //  PID Timer
     //  RPM Timer
 
-    // initialize EUSCI bus (or are we using i2c.c?)
+    // initialize EUSCI bus B (or are we using i2c.c?)
     //  an opportunity has presented itself to rewrite the I2C implementation to be asynchronous and interrupt based
 }
