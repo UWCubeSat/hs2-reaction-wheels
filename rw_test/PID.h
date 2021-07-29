@@ -7,7 +7,7 @@
  * an output to a system (plant) to drive the error to zero.
  */
 
-namespace ReactionWheel {
+namespace reaction_wheels_pid {
 
 class PID {
     public:
@@ -36,6 +36,9 @@ class PID {
         // Performs one iteration of the controller loop.
         void Iterate();
 
+        // Returns the error on the previous iteration of the PID loop.
+        float GetError() { return _error_prev; }
+
     private:
         float &_input;  // reference to controller input (plant sensor)
         float &_output;  // reference to controller output (plant command)
@@ -47,7 +50,7 @@ class PID {
 
         float _error_acc;  // error accumulator
         float _error_prev;  // previous error term (for calculating derivative)
-        float _time_prev;  // time of previous iteration (for calculating derivative)
+        unsigned long _time_prev;  // time of previous iteration (for calculating derivative)
 
         // Integral clamping settings
         bool _clamping;  // set true to turn on, false to turn off
@@ -69,6 +72,8 @@ class PID {
          * Takes in the current error and current integral term.
          */
         bool ShouldClamp(float error_curr, float integral_term_current);
+
+        float millis();
 };
 
 }  // namespace ReactionWheel

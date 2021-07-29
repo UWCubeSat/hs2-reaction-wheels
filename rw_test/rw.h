@@ -11,7 +11,10 @@
 #include <stdint.h>
 #include "PID.h"
 
-namespace ReactionWheel {
+using namespace reaction_wheels_pid;
+
+namespace RW {
+
 // RW Pin Registers
 // TODO: define all these with the final pin assignments
 #define PWM_PORT_DIR
@@ -49,23 +52,9 @@ enum class Result {
 };
 
 enum class Direction {
-    FORWARD,
+    FORWARD = 0,
     BACKWARD,
 };
-
-// store any private members of the namespace here so no other TU's can see it
-namespace {
-    // represents possible states the ReactionWheel can be in
-    enum class State {
-        START,
-        IDLE,
-        BRAKING,
-        SETTLING_FORWARD,
-        SETTLING_BACKWARD,
-        FORWARD,
-        BACKWARD,
-    };
-}   // anonymous namespace
 
 typedef struct rw_status_st {
     bool locked;
@@ -73,13 +62,14 @@ typedef struct rw_status_st {
     uint32_t lock_events;
     float rpm;
     float pwm_frequency;
+    float error;
     Direction dir;
 } Status;
 
 class ReactionWheel {
     public:
         // constructor
-        ReactionWheel(PID& pid);
+        ReactionWheel(float& input, float& output, float& setpoint);
 
         // destructor
         ~ReactionWheel();
@@ -91,55 +81,44 @@ class ReactionWheel {
         ReactionWheel& operator =(const ReactionWheel& b) = delete;
 
         // sets new motor RPM
-        Result SetTargetRPM(float RPM);
+        void SetTargetRPM(float rpm);
 
         // set max and min RPM
-        Result SetMaxMin(float min, float max);
+        void SetMaxMin(float min, float max);
 
         // turns on brake
-        Result EnableBrake();
+        void EnableBrake();
 
         // turns off brake
-        Result DisableBrake();
+        void DisableBrake();
 
         // toggle brake
-        Result ToggleBrake();
+        void ToggleBrake();
 
         // sets motor to forward
-        Result SetDirectionForward();
+        void SetDirectionForward();
 
         // sets motor to backward
-        Result SetDirectionBackward();
+        void SetDirectionBackward();
 
         // toggle's motor direction
-        Result ToggleDirection();
+        void ToggleDirection();
 
         // get how many times a lock event has occurred
-        uint16_t GetLockEventCount();
-
-        // returns the current state of the ReactionWheel
-        State GetReactionWheelState();
+        uint16_t GetLockEventCount() {return _lock_events; }
 
         // returns the current status of the ReactionWheel
-        Status GetReactionWheelStatus();
-
-        // returns reference to underlying PID
-        PID& GetPIDHandle();
-
-        // set PID constants
-        void SetGain(float kp, float ki, float kd);
+        Status GetReactionWheelStatus() { return _rw_status; }
     private:
-        // minimum error before we consider the PID settled; tunable?
-        static const float MIN_ERROR = 0.05f;
-
-        // current state of the system
-        State state = State::START;
+        static const float Kp = 0.0f;
+        static const float Ki = 0.0f;
+        static const float Kd = 0.0f;
 
         // used by SetTargetRPM to update desired PWM frequency based on new RPM
-        Result SetPWMFrequency(uint16_t frequency);
+        void SetPWMFrequency(uint16_t frequency);
 
-        // tick of underlying state machine
-        void Tick();
+        // Ticks system one step forward
+        float Tick(float setpoint);
 
         // configures MSP430 pins
 
@@ -161,17 +140,11 @@ class ReactionWheel {
         Status _rw_status;
 
         // PID controller used for this wheel
-        PID& _pid;
+        PID _pid;
 
-        // BNO055 IMU driver
-        // BNO055 imu;  // TODO: write this
+        // number of detected lock events
+        uint32_t _lock_events;
 };
-
-// PID constants for our controller
-// TODO: characterize these constants
-#define KD
-#define KP
-#define KI
 
 // COSMOS stuff
 // TODO: learn COSMOS

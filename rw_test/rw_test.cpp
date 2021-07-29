@@ -11,6 +11,8 @@
 #include "PID.h"
 #include "rw.h"
 
+using namespace reaction_wheels_pid;
+
 int main(void) {
     // TODO: fix all this nonsense to use real stuff
     float input = 0.0f;     // this will be tied to our current RPM from FG
@@ -20,8 +22,10 @@ int main(void) {
     float kd = 0.0f;
     float ki = 0.0f;
 
+    PID pid(input, output, setpoint, kp, kd, ki);
+
     // constructs a ReactionWheel object to control the Faulhaber motors
-    ReactionWheel::ReactionWheel rw();
+    RW::ReactionWheel rw();
 
     // initialize the 5 ports we need:
     //  PWM - analog, motor RPM, out
