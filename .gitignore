@@ -33,3 +33,6 @@
 
 .vscode
 app.ino
+
+rw_test/.settings
+rw_test/Debug
