@@ -7,8 +7,6 @@
  * an output to a system (plant) to drive the error to zero.
  */
 
-namespace reaction_wheels_pid {
-
 class PID {
     public:
         // Constructor: requires all parameters
@@ -75,7 +73,5 @@ class PID {
 
         float millis();
 };
-
-}  // namespace ReactionWheel
 
 #endif  // _PID_H_

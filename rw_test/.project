@@ -24,10 +24,4 @@
 		<nature>org.eclipse.cdt.core.ccnature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
-	<variableList>
-		<variable>
-			<name>DSBASE</name>
-			<value>$%7BPROJECT_LOC%7D/dsbase</value>
-		</variable>
-	</variableList>
 </projectDescription>

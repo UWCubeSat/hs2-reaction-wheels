@@ -10,9 +10,11 @@ GEN_OPTS__FLAG :=
 GEN_CMDS__FLAG := 
 
 ORDERED_OBJS += \
-"./PID.obj" \
-"./rw.obj" \
-"./rw_test.obj" \
+"./src/bno055.obj" \
+"./src/drv10970.obj" \
+"./src/main.obj" \
+"./src/pid.obj" \
+"./src/pwm.obj" \
 "../lnk_msp430fr5994.cmd" \
 $(GEN_CMDS__FLAG) \
 -llibmpu_init.a \
@@ -27,7 +29,9 @@ RMDIR := RMDIR /S/Q
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include subdir_vars.mk
+-include src/subdir_vars.mk
 -include subdir_rules.mk
+-include src/subdir_rules.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -158,9 +162,8 @@ rw_test.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "rw.d" 
-	-$(RM) "PID.obj" "rw.obj" "rw_test.obj" 
-	-$(RM) "PID.d" "rw_test.d" 
+	-$(RM) "src\bno055.d" "src\drv10970.d" "src\main.d" "src\pid.d" "src\pwm.d" 
+	-$(RM) "src\bno055.obj" "src\drv10970.obj" "src\main.obj" "src\pid.obj" "src\pwm.obj" 
 	-@echo 'Finished clean'
 	-@echo ' '
 
