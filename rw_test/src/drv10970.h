@@ -12,37 +12,6 @@
 
 #include <cstdint>
 
-// RW Pin Registers
-// TODO: define all these with the final pin assignments
-#define PWM_PORT_DIR
-#define PWM_PORT_SEL0
-#define PWM_PORT_SEL1
-#define PWM_PORT_PIN
-
-#define BRKMOD_PORT_DIR
-#define BRKMOD_PORT_OUT
-#define BRKMOD_PORT_SEL0
-#define BRKMOD_PORT_SEL1
-#define BRKMOD_PORT_PIN
-
-#define RD_PORT_DIR
-#define RD_PORT_OUT
-#define RD_PORT_SEL0
-#define RD_PORT_SEL1
-#define RD_PORT_PIN
-
-#define FG_PORT_DIR
-#define FG_PORT_OUT
-#define FG_PORT_SEL0
-#define FG_PORT_SEL1
-#define FG_PORT_PIN
-
-#define RD_PORT_DIR
-#define RD_PORT_OUT
-#define RD_PORT_SEL0
-#define RD_PORT_SEL1
-#define RD_PORT_PIN
-
 //enum class Result {
 //    NOERROR,
 //    ERROR,

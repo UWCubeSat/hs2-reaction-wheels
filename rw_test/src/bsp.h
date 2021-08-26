@@ -8,6 +8,9 @@
 #ifndef BSP_H_
 #define BSP_H_
 
+#include "types.h"
+
+#include <cstdint>
 #include <msp430.h>
 
 /*
@@ -114,24 +117,57 @@
 */
 
 // Timer definitions
-#define PWM_PERIOD      TA1CCR0
-#define PWM_DUTY_CYCLE  TA1CCR1
+#define PWM_TIM_PERIOD_CC       TA1CCR0
+#define PWM_TIM_DUTY_CYCLE_CC   TA1CCR1
 
 
 /*
-** Board-level functions
+** I2C Pin Definitions
 */
 
-// initializes board peripherals: I2C Bus, Timers, GPIO, System Clock
+#define I2C_INT_DIR         P7DIR
+#define I2C_INT_SEL0        P7SEL0
+#define I2C_INT_SEL1        P7SEL1
+#define I2C_INT_SDA_PIN     BIT0
+#define I2C_INT_SCL_PIN     BIT1
+
+#define I2C_EXT_DIR         P5DIR
+#define I2C_EXT_SEL0        P5SEL0
+#define I2C_EXT_SEL1        P5SEL1
+#define I2C_EXT_SDA_PIN     BIT0
+#define I2C_EXT_SCL_PIN     BIT1
+
+
+/*
+** External Crystal Pin Definitions
+*/
+
+#define LFXT_SEL0           PJSEL0
+#define LFXT_SEL1           PJSEL1
+#define LFXT_BIT            BIT4
+
+#define HFXT_SEL0           PJSEL0
+#define HFXT_SEL1           PJSEL1
+#define HFXT_BIT            BIT6
+
+
+/*
+** Board Support Package Interface
+*/
+
+// initializes board peripherals: I2C Bus, Timers, Clocks
 void BSP_Init();
 
 // Resets the board and all peripherals
 void BSP_Reset();
 
-// returns the current elapsed time since initialization
-uint64_t BSP_GetUpTime();
-
 // returns the number of times the board has been reset since power-on
-uint16_t BSP_GetResetCount();
+uint32 BSP_GetResetCount();
+
+// clears reset count
+void BSP_ClearResetCount();
+
+// returns reason for last reset
+uint16 BSP_GetResetReason();
 
 #endif /* BSP_H_ */

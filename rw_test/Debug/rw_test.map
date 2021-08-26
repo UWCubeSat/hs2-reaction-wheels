@@ -1,7 +1,7 @@
 ******************************************************************************
                   MSP430 Linker PC v20.2.4                     
 ******************************************************************************
->> Linked Wed Aug 25 18:35:55 2021
+>> Linked Wed Aug 25 23:22:42 2021
 
 OUTPUT FILE NAME:   <rw_test.out>
 ENTRY POINT SYMBOL: "_c_int00_noinit_noargs_mpu"  address: 00004000
@@ -80,7 +80,7 @@ MEMORY CONFIGURATION
   INT53                 0000fffa   00000002  00000002  00000000  RWIX
   INT54                 0000fffc   00000002  00000002  00000000  RWIX
   RESET                 0000fffe   00000002  00000002  00000000  RWIX
-  FRAM2                 00010000   00033ff8  0000003a  00033fbe  RWIX
+  FRAM2                 00010000   00033ff8  00000040  00033fb8  RWIX
 
 
 SECTION ALLOCATION MAP
@@ -257,20 +257,22 @@ SYSNMI     0    0000fffc    00000002
 .reset     0    0000fffe    00000002     
                   0000fffe    00000002     rts430x_lc_rd_eabi.lib : boot.c.obj (.reset)
 
-.text      0    00010000    0000003a     
+.text      0    00010000    00000040     
                   00010000    0000002c     MSPMPU_INIT_LIB_CCS_msp430_large_code_restricted_data.lib : mpu_init.o (.text:__mpu_init)
-                  0001002c    00000006     rts430x_lc_rd_eabi.lib : exit.c.obj (.text:abort)
-                  00010032    00000004                            : pre_init.c.obj (.text:_system_pre_init)
-                  00010036    00000004     main.obj (.text:main)
+                  0001002c    00000008     main.obj (.text:main)
+                  00010034    00000006     rts430x_lc_rd_eabi.lib : exit.c.obj (.text:abort)
+                  0001003a    00000004                            : pre_init.c.obj (.text:_system_pre_init)
+                  0001003e    00000002     bsp.obj (.text:_Z8BSP_Initv)
 
 MODULE SUMMARY
 
        Module             code   ro data   rw data
        ------             ----   -------   -------
     .\src\
-       main.obj           4      0         0      
+       main.obj           8      0         0      
+       bsp.obj            2      0         0      
     +--+------------------+------+---------+---------+
-       Total:             4      0         0      
+       Total:             10     0         0      
                                                   
     C:\ti\ccs1030\ccs\ccs_base\msp430\lib\FR59xx\MSPMPU_INIT_LIB_CCS_msp430_large_code_restricted_data.lib
        mpu_init.o         44     0         0      
@@ -324,7 +326,7 @@ MODULE SUMMARY
                                                   
        Stack:             0      0         160    
     +--+------------------+------+---------+---------+
-       Grand Total:       90     76        160    
+       Grand Total:       96     76        160    
 
 
 GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name 
@@ -592,7 +594,7 @@ address   name
 000004bc  BIN2BCD                   
 000004bd  BIN2BCD_H                 
 000004bc  BIN2BCD_L                 
-0001002c  C$$EXIT                   
+00010034  C$$EXIT                   
 0000043e  CAPTIO0CTL                
 0000043f  CAPTIO0CTL_H              
 0000043e  CAPTIO0CTL_L              
@@ -1831,6 +1833,7 @@ address   name
 0000015c  WDTCTL                    
 0000015d  WDTCTL_H                  
 0000015c  WDTCTL_L                  
+0001003e  _Z8BSP_Initv              
 00002c00  __STACK_END               
 000000a0  __STACK_SIZE              
 00004018  __TI_ISR_TRAP             
@@ -1880,13 +1883,13 @@ ffffffff  __c_args__
 00004000  _c_int00_noinit_noargs_mpu
 0000fffe  _reset_vector             
 00002b60  _stack                    
-00010032  _system_pre_init          
-0001002c  abort                     
+0001003a  _system_pre_init          
+00010034  abort                     
 00004000  fram_ipe_end              
 00004000  fram_ipe_start            
 00004000  fram_rw_start             
 00004000  fram_rx_start             
-00010036  main                      
+0001002c  main                      
 0000a501  mpu_ctl0_value            
 00001513  mpu_sam_value             
 00000400  mpu_segment_border1       
@@ -3449,13 +3452,14 @@ address   name
 0000fffc  __TI_int54                
 0000fffe  _reset_vector             
 00010000  __mpu_init                
-0001002c  C$$EXIT                   
-0001002c  abort                     
-00010032  _system_pre_init          
-00010036  main                      
+0001002c  main                      
+00010034  C$$EXIT                   
+00010034  abort                     
+0001003a  _system_pre_init          
+0001003e  _Z8BSP_Initv              
 ffffffff  __TI_pprof_out_hndl       
 ffffffff  __TI_prof_data_size       
 ffffffff  __TI_prof_data_start      
 ffffffff  __c_args__                
 
-[1560 symbols]
+[1561 symbols]
