@@ -15,10 +15,15 @@ class PWM {
         /*
         **  Constructs a new PWM object.
         */
-        PWM(uint32_t output_pin, uint16_t period, uint16_t duty_cycle);
+        PWM(uint16_t output_pin, uint16_t period, uint16_t frequency);
 
         /*
-        ** Sets the PWM frequency
+        ** Initializes PWM object.
+        */
+        void Init();
+
+        /*
+        ** Sets the PWM frequency.
         */
         void SetFrequency(uint16_t freq);
 
@@ -37,19 +42,15 @@ class PWM {
         */
         uint16_t GetPeriod();
 
-        void SetDutyCycle(uint16_t duty_cycle);
-
-        uint16_t GetDutyCycle();
-
     private:
-        void ClockInit();
-
         void GPIOInit();
 
         void TimerInit();
 
         uint16_t _frequency;
         uint16_t _period;
+
+        uint16_t _out_pin_base;
 
 };  // class PWM
 
