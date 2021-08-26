@@ -42,6 +42,16 @@ class PWM {
         */
         uint16_t GetPeriod();
 
+        /*
+        ** Sets the PWM period in milliseconds
+        */
+        void SetDutyCycle(uint8_t duty_cycle);
+
+        /*
+        ** Gets the PWM period in milliseconds
+        */
+        uint16_t GetPeriod();
+
     private:
         void GPIOInit();
 

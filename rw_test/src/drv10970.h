@@ -8,6 +8,8 @@
 #ifndef DRV10970_H_
 #define DRV10970_H_
 
+#include "bsp.h"
+
 #include <cstdint>
 
 // RW Pin Registers

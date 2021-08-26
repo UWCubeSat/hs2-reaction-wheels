@@ -11,6 +11,7 @@ GEN_CMDS__FLAG :=
 
 ORDERED_OBJS += \
 "./src/bno055.obj" \
+"./src/bsp.obj" \
 "./src/drv10970.obj" \
 "./src/main.obj" \
 "./src/pid.obj" \
@@ -162,8 +163,8 @@ rw_test.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "src\bno055.d" "src\drv10970.d" "src\main.d" "src\pid.d" "src\pwm.d" 
-	-$(RM) "src\bno055.obj" "src\drv10970.obj" "src\main.obj" "src\pid.obj" "src\pwm.obj" 
+	-$(RM) "src\bno055.d" "src\bsp.d" "src\drv10970.d" "src\main.d" "src\pid.d" "src\pwm.d" 
+	-$(RM) "src\bno055.obj" "src\bsp.obj" "src\drv10970.obj" "src\main.obj" "src\pid.obj" "src\pwm.obj" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

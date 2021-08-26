@@ -5,6 +5,8 @@
  *      Author: sailedeer
  */
 
+#include "main.h"
+
 #include <cstdint>
 
 int main() {
