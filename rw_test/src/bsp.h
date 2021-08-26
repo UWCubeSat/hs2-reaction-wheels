@@ -14,6 +14,10 @@
 #include <msp430.h>
 
 /*
+** Convenience defines
+*/
+
+/*
 ** General board pins
 */
 
@@ -59,38 +63,35 @@
 
 // Variable duty cycle PWM signal (output)
 #define PWM_PORT_DIR        P1DIR
-#define PWM_PORT_OUT        P1OUT
 #define PWM_PORT_SEL0       P1SEL0
 #define PWM_PORT_SEL1       P1SEL1
-#define PWM_PORT_PIN        BIT0
+#define PWM_PIN             BIT0
 
 // Brake Mode Setting signal (output)
 #define BRKMOD_PORT_DIR     P3DIR
 #define BRKMOD_PORT_OUT     P3OUT
-#define BRKMOD_PORT_SEL0    P3SEL0
-#define BRKMOD_PORT_SEL1    P3SEL1
-#define BRKMOD_PORT_PIN     BIT0
+#define BRKMOD_PIN          BIT0
 
 // Frequency Indicator signal (input)
 #define FG_PORT_DIR         P1DIR
 #define FG_PORT_OUT         P1OUT
 #define FG_PORT_SEL0        P1SEL0
 #define FG_PORT_SEL1        P1SEL1
-#define FG_PORT_PIN         BIT1
+#define FG_PIN              BIT1
 
 // Motor direction control signal (output)
 #define FR_PORT_DIR         P1DIR
 #define FR_PORT_OUT         P1OUT
 #define FR_PORT_SEL0        P1SEL0
 #define FR_PORT_SEL1        P1SEL1
-#define FR_PORT_PIN         BIT2
+#define FR_PIN              BIT2
 
 // Lock indicator signal (input)
 #define RD_PORT_DIR         P3DIR
 #define RD_PORT_OUT         P3OUT
 #define RD_PORT_SEL0        P3SEL0
 #define RD_PORT_SEL1        P3SEL1
-#define RD_PORT_PIN         BIT1
+#define RD_PIN              BIT1
 
 
 /*
@@ -102,14 +103,14 @@
 #define INT_PORT_OUT     P2OUT
 #define INT_PORT_SEL0    P2SEL0
 #define INT_PORT_SEL1    P2SEL1
-#define INT_PORT_PIN     BIT2
+#define INT_PIN     BIT2
 
 // Reset signal (output)
 #define RST_PORT_DIR     P2DIR
 #define RST_PORT_OUT     P2OUT
 #define RST_PORT_SEL0    P2SEL0
 #define RST_PORT_SEL1    P2SEL1
-#define RST_PORT_PIN     BIT2
+#define RST_PIN     BIT2
 
 
 /*
@@ -169,5 +170,14 @@ void BSP_ClearResetCount();
 
 // returns reason for last reset
 uint16 BSP_GetResetReason();
+
+// returns time since last reset in milliseconds
+uint64 BSP_GetElapsedTime();
+
+// reads register from device on I2C bus
+uint8 BSP_I2C_ReadRegister(uint8 bus, uint8 addr, uint8 * r_buf, uint8 r_bytes);
+
+// writes to device register on I2C bus
+uint8 BSP_I2C_WriteRegister(uint8 bus, uint8 addr, uint8 * w_buf, uint8 w_bytes);
 
 #endif /* BSP_H_ */
