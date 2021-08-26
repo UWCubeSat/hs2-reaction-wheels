@@ -8,14 +8,14 @@
 #ifndef PWM_H_
 #define PWM_H_
 
-#include <cstdint>
+#include "types.h"
 
 class PWM {
     public:
         /*
         **  Constructs a new PWM object.
         */
-        PWM(uint16_t output_pin, uint16_t period, uint16_t frequency);
+        PWM(uint16 output_pin, uint16 frequency, uint16 duty_cycle);
 
         /*
         ** Initializes PWM object.
@@ -25,7 +25,7 @@ class PWM {
         /*
         ** Sets the PWM frequency.
         */
-        void SetFrequency(uint16_t freq);
+        void SetFrequency(uint16 freq);
 
         /*
         ** Gets the PWM frequency in milliseconds
@@ -35,7 +35,7 @@ class PWM {
         /*
         ** Sets the PWM period in milliseconds
         */
-        void SetPeriod(uint16_t period);
+        void SetPeriod(uint16 period);
 
         /*
         ** Gets the PWM period in milliseconds
@@ -45,22 +45,18 @@ class PWM {
         /*
         ** Sets the PWM period in milliseconds
         */
-        void SetDutyCycle(uint8_t duty_cycle);
+        void SetDutyCycle(uint8 duty_cycle);
 
-        /*
-        ** Gets the PWM period in milliseconds
-        */
-        uint16_t GetPeriod();
 
     private:
         void GPIOInit();
 
         void TimerInit();
 
-        uint16_t _frequency;
-        uint16_t _period;
+        uint16 _frequency;
+        uint16 _period;
 
-        uint16_t _out_pin_base;
+        uint16 _out_pin_base;
 
 };  // class PWM
 
