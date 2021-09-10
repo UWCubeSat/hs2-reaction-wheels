@@ -1,5 +1,5 @@
-#ifndef REACTION_WHEELS_PROTO_PID_H_
-#define REACTION_WHEELS_PROTO_PID_H_
+#ifndef PID_H_
+#define PID_H_
 
 /*
  * This class implements a PID controller given references to input, output, and setpoint
@@ -74,4 +74,4 @@ class PID {
         float millis();
 };
 
-#endif  // _PID_H_
+#endif  // PID_H_

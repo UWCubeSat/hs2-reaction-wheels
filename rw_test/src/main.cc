@@ -6,9 +6,14 @@
  */
 
 #include "main.h"
+#include "bsp.h"
 
 #include <cstdint>
 
 int main() {
+    BSP_Init();
+    while (1) {
+
+    }
 
 }

@@ -19,7 +19,7 @@ uint32 local_reset_count = 0;
 // update each time we call BSP_Init()
 static uint16 reset_reason;
 
-static void GPIOInit() {
+static void PeriphInit() {
     // Force all outputs to be 0, so we don't get spurious signals when we unlock
     P1OUT = 0;
     P2OUT = 0;
@@ -43,17 +43,93 @@ static void GPIOInit() {
 
     // freq indicator pin = input
     FG_PORT_DIR &= ~(FG_PIN);
-    // TODO: set up an interrupt here so we can capture the current RPM
+    FG_PORT_IES &= ~(FG_PIN);
+    FG_PORT_IE |= FG_PIN;
 
+    // motor direction pin = output
+    FR_PORT_DIR |= FR_PIN;
+
+    // lock indicator = input
+    RD_PORT_DIR &= ~(RD_PIN);
+    RD_PORT_IES &= ~(RD_PIN);
+    RD_PORT_IE |= RD_PIN;
+
+
+    // BNO055 pins
+
+    // interrupt pin = input
+    INT_PORT_DIR &= ~(INT_PIN);
+    INT_PORT_IES &= ~(INT_PIN);
+    INT_PORT_IE |= INT_PIN;
+
+    // reset pin = output
+    RST_PORT_DIR |= RST_PIN;
+
+
+    // Extra GPIOs
+
+    // GPIO 1 = output
+    GPIO1_PORT_DIR |= GPIO1_PIN;
+
+    // GPIO 2 = output
+    GPIO2_PORT_DIR |= GPIO2_PIN;
+
+    // GPIO 3 = output
+    GPIO3_PORT_DIR |= GPIO3_PIN;
+
+    // GPIO 4 = output
+    GPIO4_PORT_DIR |= GPIO4_PIN;
+
+    // Status LED pin = output
+    LED_PORT_DIR |= LED_PIN;
 
 }
 
 static void I2CInit() {
+    // I2C 1 (External, secondary)
+    UCB1CTLW0 |= UCSWRST;                       // hold in reset
+    UCB1CTLW0 |= (UCMODE_3 | UCSYNC | UCSSEL__SMCLK);           // secondary on bus
+    UCB0I2COA = (OWN_ADDRESS | UCOAEN);         // own (secondary) address
+    UCB1BRW = 160;                              // SMCLK / 160 (100 kHz)
+    UCB1CTLW1 = (UCASTP_2 | UCCLTO_3);          // auto stop assertion + timeout
 
+    // configure pins
+    I2C_EXT_SEL0 |= (I2C_EXT_SDA_PIN | I2C_EXT_SCL_PIN);
+    I2C_EXT_SEL1 &= ~(I2C_EXT_SDA_PIN | I2C_EXT_SCL_PIN);
+
+    // enable interrupts
+    UCB2CTLW0
+
+
+    // I2C 2 (Internal, primary)
+    UCB2CTLW0 |= UCSWRST;                       // hold in reset
+    UCB2CTLW0 |= (UCMODE_3 | UCMST | UCSYNC | UCSSEL__SMCLK);   // primary on bus
+    UCB2BRW = 40;                               // SMCLK / 40 (400 kHz)
+    UCB2CTLW1 = (UCASTP_2 | UCCLTO_3);          // auto stop assertion + timeout
+
+    // configure pins
+    I2C_INT_SEL0 |= (I2C_INT_SDA_PIN | I2C_INT_SCL_PIN);
+    I2C_INT_SEL1 &= ~(I2C_INT_SDA_PIN | I2C_INT_SCL_PIN);
+
+    // enable bus
+    UCB2CTLW0 &= ~(UCSWRST);
+
+    // enable interrupts
+    UCBIE
+
+    return;
 }
 
 static void TimerInit() {
     // initialize PWM timer
+    PWM_TIM_PERIOD_CC = 1000 - 1;   // PWM frequency starts at 16 kHz (15 kHz to 100 kHz for DRV10970)
+    PWM_TIM_CCTL1 = OUTMOD_7;       // reset-set
+    PWM_TIM_DUTY_CYCLE_CC = 0;      // duty-cycle of 0%
+    PWM_TIM_CTL = TASSEL__SMCLK | MC__UP | TACLR;  // SMCLK, up mode, clear TAR
+
+    // initialize RPM timer
+    // TODO: RPM Timer - extrapolate RPM from ticks received in some period
+    return;
 }
 
 static void ClockInit() {
@@ -77,13 +153,13 @@ static void ClockInit() {
     CSCTL4 &= ~(LFXTBYPASS | HFXTBYPASS);
 
     CSCTL1 = DCOFSEL_0;                     // Set DCO = 1MHz
-    CSCTL2 = SELA__VLOCLK | SELS__HFXTCLK | SELM__HFXTCLK; // Set ACLK=VLO SMCLK=MCLK=HFXT
+    CSCTL2 = SELA__LFXTCLK | SELS__HFXTCLK | SELM__HFXTCLK; // Set ACLK=LFXT SMCLK=MCLK=HFXT
     CSCTL3 = DIVA__4 | DIVS__4 | DIVM__4;   // Set all dividers
     CSCTL1 = DCOFSEL_6;                     // set DCO = 8MHz
 
-    // let DCO settle
+    // let DCO settle (not sure why 60, blame the HS1 engineers)
     __delay_cycles(60);
-    CSCTL3 = DIVA__1 | DIVS__16 | DIVM__1;   // set all dividers to 1 for 16 MHz/8 MHz/1 MHz operation
+    CSCTL3 = DIVA__1 | DIVS__1 | DIVM__1;   // set dividers for 8 MHz/16 MHz/16 MHz operation
 
     // turn both external oscillator sources on
     CSCTL4 &= ~(LFXTOFF | HFXTOFF);
@@ -103,17 +179,19 @@ static void RTCInit() {
 
     RTCCTL0_L = RTCTEVIE_L;                     // RTC event interrupt enable
     RTCCTL1 = RTCSSEL_2 | RTCTEV_3 | RTCHOLD;   // Counter Mode, RTC1PS, 8-bit ovf, 32-bit interrupt
-    RTCPS0CTL = RT0PSDIV1 | RT1PSDIV1;          // ACLK, /8
+    RTCPS0CTL = RT0PSDIV__8;                    // ACLK, /8
     RTCPS1CTL = RT1SSEL1 | RT1PSDIV__16;        // out from RT0PS, /16; increment ~= 4 ms
 
+    // clear count registers
     RTCCNT1 = 0;
     RTCCNT2 = 0;
     RTCCNT3 = 0;
     RTCCNT4 = 0;
 
     RTCCTL13 &= ~(RTCHOLD);                 // Start RTC
+    RTCCTL0_H = 0;                          // lock RTC
+    return;
 }
-
 
 void BSP_Init() {
     // Stop watchdog timer
@@ -128,7 +206,7 @@ void BSP_Init() {
     TimerInit();
 
     // initialize digital I/O resources
-    GPIOInit();
+    PeriphInit();
 
     // initialize serial resources
     I2CInit();
@@ -136,6 +214,11 @@ void BSP_Init() {
     // Disable the GPIO power-on default high-impedance mode to activate
     // previously configured port settings
     PM5CTL0 &= ~LOCKLPM5;
+    return;
+}
+
+void BSP_Reset() {
+
 }
 
 uint32 BSP_GetResetCount() {
@@ -148,9 +231,127 @@ uint16 BSP_GetResetReason() {
 
 void BSP_ClearResetCount() {
     local_reset_count = 0;
+    return;
 }
 
-uint64 BSP_GetElapsedTime() {
-    // TODO: set up RTC so that we can get a MET
-    return 0;
+// TODO: I have no idea if this works smh my head
+uint64 BSP_GetMET() {
+    return ((uint64)RTCCNT1) | ((uint64)RTCCNT2 << 8) | ((uint64)RTCCNT3 << 16) | ((uint64)RTCCNT4 << 24);
+}
+
+static I2CResult BSP_I2C_TransmitAndReceive(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_bytes, uint8 * r_buf, uint8 r_bytes) {
+    if (BSP_I2C_BusBusy(bus)) return I2C_BUS_BUSY;
+
+    BSP_I2C_Disable(bus);
+
+    // ensures that STOP condition is sent when communication is finished
+    BSP_I2C_SetAutoStopByteCount(bus, r_bytes + w_bytes);
+
+    BSP_I2C_Enable(bus);
+
+    // prepare our
+}
+
+static uint8 BSP_I2C_BusBusy(I2CBus bus) {
+    if (bus == I2C_EXTERNAL_BUS) {
+
+    } else if (bus == I2C_INTERNAL_BUS) {
+
+    }
+}
+
+static void BSP_I2C_Enable(I2CBus bus) {
+    if (bus == I2C_EXTERNAL_BUS) {
+        UCB1CTLW0 &= ~UCSWRST;
+    } else if (bus == I2C_INTERNAL_BUS) {
+        UCB2CTLW0 &= ~UCSWRST;
+    }
+}
+
+static void BSP_I2C_Disable(I2CBus bus) {
+    if (bus == I2C_EXTERNAL_BUS) {
+        UCB1CTLW0 |= UCSWRST;
+    } else if (bus == I2C_INTERNAL_BUS) {
+        UCB2CTLW0 |= UCSWRST;
+    }
+}
+
+// external I2C interrupt service routine
+#pragma vector = USCI_B1_VECTOR
+__interrupt void USCI_B1_ISR(void) {
+    switch(__even_in_range(UCB1IV, UCIV__UCBIT9IFG)) {
+        case UCIV__NONE: // Vector 0: No interrupts
+            break;
+        case UCIV__UCALIFG: // Vector 2: ALIFG
+            break;
+        case UCIV__UCNACKIFG: // Vector 4: NACKIFG
+            break;
+        case UCIV__UCSTTIFG: // Vector 6: STTIFG
+            break;
+        case UCIV__UCSTPIFG: // Vector 8: STPIFG
+            break;
+        case UCIV__UCRXIFG3: // Vector 10: RXIFG3
+            break;
+        case UCIV__UCTXIFG3: // Vector 12: TXIFG3
+            break;
+        case UCIV__UCRXIFG2: // Vector 14: RXIFG2
+            break;
+        case UCIV__UCTXIFG2: // Vector 16: TXIFG2
+            break;
+        case UCIV__UCRXIFG1: // Vector 18: RXIFG1
+            break;
+        case UCIV__UCTXIFG1: // Vector 20: TXIFG1
+            break;
+        case UCIV__UCRXIFG0: // Vector 22: RXIFG0
+            break;
+        case UCIV__UCTXIFG0: // Vector 24: TXIFG0
+            break;
+        case UCIV__UCBCNTIFG: // Vector 26: BCNTIFG
+            break;
+        case UCIV__UCCLTOIFG: // Vector 28: clock low time-out
+            break;
+        case UCIV__UCBIT9IFG: // Vector 30: 9th bit
+            break;
+        default: break;
+    }
+}
+
+// internal I2C interrupt service routine
+#pragma vector = USCI_B2_VECTOR
+__interrupt void USCI_B2_ISR(void) {
+    switch(__even_in_range(UCB2IV, UCIV__UCBIT9IFG)) {
+        case UCIV__NONE: // Vector 0: No interrupts
+            break;
+        case UCIV__UCALIFG: // Vector 2: ALIFG
+            break;
+        case UCIV__UCNACKIFG: // Vector 4: NACKIFG
+            break;
+        case UCIV__UCSTTIFG: // Vector 6: STTIFG
+            break;
+        case UCIV__UCSTPIFG: // Vector 8: STPIFG
+            break;
+        case UCIV__UCRXIFG3: // Vector 10: RXIFG3
+            break;
+        case UCIV__UCTXIFG3: // Vector 12: TXIFG3
+            break;
+        case UCIV__UCRXIFG2: // Vector 14: RXIFG2
+            break;
+        case UCIV__UCTXIFG2: // Vector 16: TXIFG2
+            break;
+        case UCIV__UCRXIFG1: // Vector 18: RXIFG1
+            break;
+        case UCIV__UCTXIFG1: // Vector 20: TXIFG1
+            break;
+        case UCIV__UCRXIFG0: // Vector 22: RXIFG0
+            break;
+        case UCIV__UCTXIFG0: // Vector 24: TXIFG0
+            break;
+        case UCIV__UCBCNTIFG: // Vector 26: BCNTIFG
+            break;
+        case UCIV__UCCLTOIFG: // Vector 28: clock low time-out
+            break;
+        case UCIV__UCBIT9IFG: // Vector 30: 9th bit
+            break;
+        default: break;
+    }
 }

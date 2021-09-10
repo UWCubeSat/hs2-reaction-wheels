@@ -26,35 +26,35 @@
 #define GPIO1_PORT_OUT      P1OUT
 #define GPIO1_PORT_SEL0     P1SEL0
 #define GPIO1_PORT_SEL1     P1SEL1
-#define GPIO1_PORT_PIN      BIT6
+#define GPIO1_PIN      BIT6
 
 // GPIO 2 (inout)
 #define GPIO2_PORT_DIR      P3DIR
 #define GPIO2_PORT_OUT      P3OUT
 #define GPIO2_PORT_SEL0     P3SEL0
 #define GPIO2_PORT_SEL1     P3SEL1
-#define GPIO2_PORT_PIN      BIT7
+#define GPIO2_PIN      BIT7
 
 // GPIO 3 (inout)
 #define GPIO3_PORT_DIR      P3DIR
 #define GPIO3_PORT_OUT      P3OUT
 #define GPIO3_PORT_SEL0     P3SEL0
 #define GPIO3_PORT_SEL1     P3SEL1
-#define GPIO3_PORT_PIN      BIT6
+#define GPIO3_PIN      BIT6
 
 // GPIO 4 (inout)
 #define GPIO4_PORT_DIR      P3DIR
 #define GPIO4_PORT_OUT      P3OUT
 #define GPIO4_PORT_SEL0     P3SEL0
 #define GPIO4_PORT_SEL1     P3SEL1
-#define GPIO4_PORT_PIN      BIT5
+#define GPIO4_PIN      BIT5
 
 // General LED (output)
 #define LED_PORT_DIR        P1DIR
 #define LED_PORT_OUT        P1OUT
 #define LED_PORT_SEL0       P1SEL0
 #define LED_PORT_SEL1       P1SEL1
-#define LED_PORT_PIN        BIT7
+#define LED_PIN        BIT7
 
 
 /*
@@ -77,6 +77,8 @@
 #define FG_PORT_OUT         P1OUT
 #define FG_PORT_SEL0        P1SEL0
 #define FG_PORT_SEL1        P1SEL1
+#define FG_PORT_IES         P1IES
+#define FG_PORT_IE          P1IE
 #define FG_PIN              BIT1
 
 // Motor direction control signal (output)
@@ -91,6 +93,8 @@
 #define RD_PORT_OUT         P3OUT
 #define RD_PORT_SEL0        P3SEL0
 #define RD_PORT_SEL1        P3SEL1
+#define RD_PORT_IES         P3IES
+#define RD_PORT_IE          P3IE
 #define RD_PIN              BIT1
 
 
@@ -99,18 +103,20 @@
 */
 
 // Interrupt signal (input)
-#define INT_PORT_DIR     P2DIR
-#define INT_PORT_OUT     P2OUT
-#define INT_PORT_SEL0    P2SEL0
-#define INT_PORT_SEL1    P2SEL1
-#define INT_PIN     BIT2
+#define INT_PORT_DIR        P2DIR
+#define INT_PORT_OUT        P2OUT
+#define INT_PORT_SEL0       P2SEL0
+#define INT_PORT_SEL1       P2SEL1
+#define INT_PORT_IES        P2IES
+#define INT_PORT_IE         P2IE
+#define INT_PIN             BIT2
 
 // Reset signal (output)
-#define RST_PORT_DIR     P2DIR
-#define RST_PORT_OUT     P2OUT
-#define RST_PORT_SEL0    P2SEL0
-#define RST_PORT_SEL1    P2SEL1
-#define RST_PIN     BIT2
+#define RST_PORT_DIR        P2DIR
+#define RST_PORT_OUT        P2OUT
+#define RST_PORT_SEL0       P2SEL0
+#define RST_PORT_SEL1       P2SEL1
+#define RST_PIN             BIT2
 
 
 /*
@@ -118,12 +124,21 @@
 */
 
 // Timer definitions
-#define PWM_TIM_PERIOD_CC       TA1CCR0
-#define PWM_TIM_DUTY_CYCLE_CC   TA1CCR1
+#define PWM_TIM_PERIOD_CC       TA0CCR0
+#define PWM_TIM_DUTY_CYCLE_CC   TA0CCR1
+#define PWM_TIM_CCTL1           TA0CCTL1
+#define PWM_TIM_CTL             TA0CTL
 
 
 /*
-** I2C Pin Definitions
+** RPM Counter Definitions
+*/
+
+// Timer definitions
+#define RPM_TIM_PERIOD_CC       TA1CCR0
+
+/*
+** I2C Definitions
 */
 
 #define I2C_INT_DIR         P7DIR
@@ -138,6 +153,17 @@
 #define I2C_EXT_SDA_PIN     BIT0
 #define I2C_EXT_SCL_PIN     BIT1
 
+typedef enum i2c_bus {
+    I2C_EXTERNAL_BUS = 0,
+    I2C_INTERNAL_BUS
+} I2CBus;
+
+typedef enum i2c_result {
+    I2C_BUS_BUSY = 0,
+
+}I2CResult;
+
+#define OWN_ADDRESS         0x48
 
 /*
 ** External Crystal Pin Definitions
@@ -172,12 +198,39 @@ void BSP_ClearResetCount();
 uint16 BSP_GetResetReason();
 
 // returns time since last reset in milliseconds
-uint64 BSP_GetElapsedTime();
+uint64 BSP_GetMET();
 
 // reads register from device on I2C bus
-uint8 BSP_I2C_ReadRegister(uint8 bus, uint8 addr, uint8 * r_buf, uint8 r_bytes);
+uint8 BSP_I2C_Transmit(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_bytes);
 
 // writes to device register on I2C bus
-uint8 BSP_I2C_WriteRegister(uint8 bus, uint8 addr, uint8 * w_buf, uint8 w_bytes);
+uint8 BSP_I2C_Receive(I2CBus bus, uint8 addr, uint8 * r_buf, uint8 r_bytes);
+
+// reads and writes to device on bus at addr
+uint8 BSP_I2C_TransmitAndReceive(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_bytes, uint8 * r_buf, uint8 r_bytes);
+
+// wait for STOP condition to be sent
+static void BSP_I2C_WaitForStopComplete(I2CBus bus);
+
+// wait for START condition to be sent
+static void BSP_I2C_WaitForStartComplete(I2CBUS bus);
+
+// send start condition for transmit
+static void BSP_I2C_TransmitStart(I2CBus bus);
+
+// send stop condition for transmit
+static void BSP_I2C_TransmitStop(I2CBus bus);
+
+// send start condition for receive
+static void BSP_I2C_ReceiveStart(I2CBus bus);
+
+// send stop condition for receive
+static void BSP_I2C_ReceiveStop(I2CBus bus);
+
+static void BSP_I2C_Enable(I2CBus bus);
+
+static void BSP_I2C_Disable(I2CBus bus);
+
+static uint8 BSP_I2C_BusBusy(I2CBus bus);
 
 #endif /* BSP_H_ */
