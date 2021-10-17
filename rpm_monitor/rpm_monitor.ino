@@ -1,7 +1,7 @@
 #include <Servo.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
- 
+
 Servo esc;
 int escPin = 2;
 int throttlePin = 0;
@@ -14,15 +14,15 @@ volatile int pulseCount;
 float rpm;
 
 const int POLES = 14;  // number of poles in the motor
-const float MILTOMIN = 60000.0;  // conversion milliseconds to mins
-const int ROTS_TO_COUNT = 1;  // in how many rotations to check the rpm value
+const float MILTOMIN = 60000.0;  // conversion mins to millis
+const int ROTS_TO_COUNT = 3;  // in how many rotations to check the rpm value
 volatile bool checkRPM;
 
 const long DEBOUNCE_TIME = 10;  // debouncing time in milliseconds
 volatile unsigned long last_micros;  // timestamp of last sensor reading
 
 void setup() {
-    Serial.begin(1000000);
+    Serial.begin(9600);
     esc.attach(escPin, 1000, 2000);
 
     // set up interrupt on rpm monitor pin
@@ -75,7 +75,6 @@ void debounceMonitor() {
 
 void monitor() {
     cli();
-    //Serial.println(pulseCount);
     pulseCount++;
     if (pulseCount == POLES * ROTS_TO_COUNT) {
         checkRPM = true;
