@@ -75,6 +75,8 @@
 // Frequency Indicator signal (input)
 #define FG_PORT_DIR         P1DIR
 #define FG_PORT_OUT         P1OUT
+#define FG_PORT_IN          P1IN
+#define FG_PORT_REN         P1REN
 #define FG_PORT_SEL0        P1SEL0
 #define FG_PORT_SEL1        P1SEL1
 #define FG_PORT_IES         P1IES
@@ -91,6 +93,8 @@
 // Lock indicator signal (input)
 #define RD_PORT_DIR         P3DIR
 #define RD_PORT_OUT         P3OUT
+#define RD_PORT_IN          P3IN
+#define RD_PORT_REN         P3REN
 #define RD_PORT_SEL0        P3SEL0
 #define RD_PORT_SEL1        P3SEL1
 #define RD_PORT_IES         P3IES
