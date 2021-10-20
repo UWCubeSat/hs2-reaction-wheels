@@ -13,7 +13,8 @@
 class PWM {
     public:
         // Constructs a new PWM object
-        PWM(uint16_t output_pin, uint16_t frequency, uint16_t duty_cycle);
+        // Requirement: period >= duty_cycle
+        PWM(uint16_t output_pin, uint16_t period, uint16_t duty_cycle);
 
         // Delete copy constructor
         PWM(const PWM &) = delete;
@@ -22,26 +23,22 @@ class PWM {
         ~PWM();
 
         // Sets the PWM frequency
-        void SetFrequency(uint16_t frequency);
+        void SetPeriod(uint16_t period);
 
         // Gets the PWM frequency
-        uint16_t GetFrequqncy() { return _frequency; }
+        uint16_t GetPeriod() { return PWM_TIM_PERIOD_CC; }
 
         // Sets the PWM period in milliseconds
         void SetDutyCycle(uint8 duty_cycle);
 
         // Gets the PWM period in milliseconds
-        uint16_t GetDutyCycle() { return _period; }
+        uint16_t GetDutyCycle() { return PWM_TIM_DUTY_CYCLE_CC; }
 
 
     private:
         void ClockInit();
         void GPIOInit();
         void TimerInit();
-
-        uint16_t _output_pin;
-        uint16_t _frequency;
-        uint16_t _period;
 
 };  // class PWM
 
