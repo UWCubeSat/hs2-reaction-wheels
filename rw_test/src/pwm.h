@@ -36,7 +36,6 @@ class PWM {
 
 
     private:
-        void ClockInit();
         void GPIOInit();
         void TimerInit();
 
