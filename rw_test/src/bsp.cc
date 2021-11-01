@@ -16,9 +16,6 @@
 #pragma PERSISTENT
 uint32 local_reset_count = 0;
 
-// update each time we call BSP_Init()
-static uint16 reset_reason;
-
 static void PeriphInit() {
     // Force all outputs to be 0, so we don't get spurious signals when we unlock
     P1OUT = 0;
@@ -98,8 +95,10 @@ static void I2CInit() {
     I2C_EXT_SEL1 &= ~(I2C_EXT_SDA_PIN | I2C_EXT_SCL_PIN);
 
     // enable interrupts
-    UCB2CTLW0
+    UCB2IE &= ~(UCRXIE0 | UCTXIE0);
 
+    // enable bus
+    UCB2CTLW0 &= ~(UCSWRST);
 
     // I2C 2 (Internal, primary)
     UCB2CTLW0 |= UCSWRST;                       // hold in reset
@@ -111,11 +110,11 @@ static void I2CInit() {
     I2C_INT_SEL0 |= (I2C_INT_SDA_PIN | I2C_INT_SCL_PIN);
     I2C_INT_SEL1 &= ~(I2C_INT_SDA_PIN | I2C_INT_SCL_PIN);
 
+    // enable interrupts
+    UCB2IE &= ~(UCRXIE0 | UCTXIE0);
+
     // enable bus
     UCB2CTLW0 &= ~(UCSWRST);
-
-    // enable interrupts
-    UCBIE
 
     return;
 }
@@ -239,6 +238,20 @@ uint64 BSP_GetMET() {
     return ((uint64)RTCCNT1) | ((uint64)RTCCNT2 << 8) | ((uint64)RTCCNT3 << 16) | ((uint64)RTCCNT4 << 24);
 }
 
+I2CResult BSP_I2C_BeginTransmission(I2CBus bus, uint8 addr) { 
+    return I2C_NO_ERROR;
+}
+
+I2CResult BSP_I2C_Write(I2CBus bus, uint8 byte) {
+    return I2C_NO_ERROR;
+}
+
+I2CResult BSP_I2C_Read(I2CBus bus, uint8 *byte) {
+
+}
+
+I2CResult BSP_I2C_EndTransmission(I2CBus bus);
+
 static I2CResult BSP_I2C_TransmitAndReceive(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_bytes, uint8 * r_buf, uint8 r_bytes) {
     if (BSP_I2C_BusBusy(bus)) return I2C_BUS_BUSY;
 
@@ -252,14 +265,16 @@ static I2CResult BSP_I2C_TransmitAndReceive(I2CBus bus, uint8 addr, uint8 * w_bu
     // prepare our
 }
 
+// check if a transaction is ongoing
 static uint8 BSP_I2C_BusBusy(I2CBus bus) {
     if (bus == I2C_EXTERNAL_BUS) {
-
+        return (UCB1STATW & UCBBUSY);
     } else if (bus == I2C_INTERNAL_BUS) {
-
+        return (UCB2STATW & UCBBUSY);
     }
 }
 
+// enable the bus
 static void BSP_I2C_Enable(I2CBus bus) {
     if (bus == I2C_EXTERNAL_BUS) {
         UCB1CTLW0 &= ~UCSWRST;
@@ -268,6 +283,7 @@ static void BSP_I2C_Enable(I2CBus bus) {
     }
 }
 
+// disable the bus
 static void BSP_I2C_Disable(I2CBus bus) {
     if (bus == I2C_EXTERNAL_BUS) {
         UCB1CTLW0 |= UCSWRST;
@@ -276,7 +292,7 @@ static void BSP_I2C_Disable(I2CBus bus) {
     }
 }
 
-// external I2C interrupt service routine
+// external (secondary) I2C interrupt service routine
 #pragma vector = USCI_B1_VECTOR
 __interrupt void USCI_B1_ISR(void) {
     switch(__even_in_range(UCB1IV, UCIV__UCBIT9IFG)) {
@@ -303,6 +319,7 @@ __interrupt void USCI_B1_ISR(void) {
         case UCIV__UCTXIFG1: // Vector 20: TXIFG1
             break;
         case UCIV__UCRXIFG0: // Vector 22: RXIFG0
+            // shift byte out of register into our target buffer
             break;
         case UCIV__UCTXIFG0: // Vector 24: TXIFG0
             break;
@@ -316,7 +333,7 @@ __interrupt void USCI_B1_ISR(void) {
     }
 }
 
-// internal I2C interrupt service routine
+// internal (primary) I2C interrupt service routine
 #pragma vector = USCI_B2_VECTOR
 __interrupt void USCI_B2_ISR(void) {
     switch(__even_in_range(UCB2IV, UCIV__UCBIT9IFG)) {
@@ -343,8 +360,10 @@ __interrupt void USCI_B2_ISR(void) {
         case UCIV__UCTXIFG1: // Vector 20: TXIFG1
             break;
         case UCIV__UCRXIFG0: // Vector 22: RXIFG0
+            // shift bits out of read register
             break;
         case UCIV__UCTXIFG0: // Vector 24: TXIFG0
+            // 
             break;
         case UCIV__UCBCNTIFG: // Vector 26: BCNTIFG
             break;

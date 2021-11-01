@@ -153,13 +153,16 @@
 #define I2C_EXT_SDA_PIN     BIT0
 #define I2C_EXT_SCL_PIN     BIT1
 
+#define I2C_BASE_CLOCK_FREQ 16000000 // 16 MHz
+
 typedef enum i2c_bus {
     I2C_EXTERNAL_BUS = 0,
     I2C_INTERNAL_BUS
 } I2CBus;
 
 typedef enum i2c_result {
-    I2C_BUS_BUSY = 0,
+    I2C_NO_ERROR = 0,
+    I2C_BUS_BUSY = 1,
 
 }I2CResult;
 
@@ -226,6 +229,8 @@ static void BSP_I2C_ReceiveStart(I2CBus bus);
 
 // send stop condition for receive
 static void BSP_I2C_ReceiveStop(I2CBus bus);
+
+static void BSP_I2C_SetAutoStopByteCount(I2CBus bus);
 
 static void BSP_I2C_Enable(I2CBus bus);
 
