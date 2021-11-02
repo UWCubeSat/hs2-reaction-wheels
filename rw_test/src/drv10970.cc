@@ -10,6 +10,7 @@
 
 #include "drv10970.h"
 #include <cstdint>
+#include "bsp.h"
 
 DRV10970::DRV10970() {
     // Initialize class variables

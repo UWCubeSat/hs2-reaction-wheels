@@ -16,5 +16,9 @@ int main() {
 //    while (1) {
 //
 //    }
-    PWM pwm(PWM_PIN, 1000, 500);
+    
+    BSP_Init();
+    //PWM pwm(PWM_PIN, 1000, 900);
+    PWM_TIM_DUTY_CYCLE_CC = 500;
+    LED_PORT_OUT |= LED_PIN;
 }

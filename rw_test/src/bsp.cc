@@ -16,8 +16,7 @@
 #pragma PERSISTENT
 uint32 local_reset_count = 0;
 
-// update each time we call BSP_Init()
-static uint16 reset_reason;
+uint16_t reset_reason;
 
 static void PeriphInit() {
     // Force all outputs to be 0, so we don't get spurious signals when we unlock
@@ -89,7 +88,7 @@ static void I2CInit() {
     // I2C 1 (External, secondary)
     UCB1CTLW0 |= UCSWRST;                       // hold in reset
     UCB1CTLW0 |= (UCMODE_3 | UCSYNC | UCSSEL__SMCLK);           // secondary on bus
-    UCB0I2COA = (OWN_ADDRESS | UCOAEN);         // own (secondary) address
+    UCB1I2COA0 = (OWN_ADDRESS | UCOAEN);         // own (secondary) address
     UCB1BRW = 160;                              // SMCLK / 160 (100 kHz)
     UCB1CTLW1 = (UCASTP_2 | UCCLTO_3);          // auto stop assertion + timeout
 
@@ -98,8 +97,10 @@ static void I2CInit() {
     I2C_EXT_SEL1 &= ~(I2C_EXT_SDA_PIN | I2C_EXT_SCL_PIN);
 
     // enable interrupts
-    UCB2CTLW0
+    UCB2IE &= ~(UCRXIE0 | UCTXIE0);
 
+    // enable bus
+    UCB2CTLW0 &= ~(UCSWRST);
 
     // I2C 2 (Internal, primary)
     UCB2CTLW0 |= UCSWRST;                       // hold in reset
@@ -111,11 +112,11 @@ static void I2CInit() {
     I2C_INT_SEL0 |= (I2C_INT_SDA_PIN | I2C_INT_SCL_PIN);
     I2C_INT_SEL1 &= ~(I2C_INT_SDA_PIN | I2C_INT_SCL_PIN);
 
+    // enable interrupts
+    UCB2IE &= ~(UCRXIE0 | UCTXIE0);
+
     // enable bus
     UCB2CTLW0 &= ~(UCSWRST);
-
-    // enable interrupts
-    UCBIE
 
     return;
 }
@@ -153,7 +154,7 @@ static void ClockInit() {
     CSCTL4 &= ~(LFXTBYPASS | HFXTBYPASS);
 
     CSCTL1 = DCOFSEL_0;                     // Set DCO = 1MHz
-    CSCTL2 = SELA__LFXTCLK | SELS__HFXTCLK | SELM__HFXTCLK; // Set ACLK=LFXT SMCLK=MCLK=HFXT
+    CSCTL2 = SELA__LFXTCLK | SELS__DCOCLK | SELM__DCOCLK; // Set ACLK=LFXT SMCLK=MCLK=HFXT
     CSCTL3 = DIVA__4 | DIVS__4 | DIVM__4;   // Set all dividers
     CSCTL1 = DCOFSEL_6;                     // set DCO = 8MHz
 
@@ -239,119 +240,139 @@ uint64 BSP_GetMET() {
     return ((uint64)RTCCNT1) | ((uint64)RTCCNT2 << 8) | ((uint64)RTCCNT3 << 16) | ((uint64)RTCCNT4 << 24);
 }
 
-static I2CResult BSP_I2C_TransmitAndReceive(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_bytes, uint8 * r_buf, uint8 r_bytes) {
-    if (BSP_I2C_BusBusy(bus)) return I2C_BUS_BUSY;
-
-    BSP_I2C_Disable(bus);
-
-    // ensures that STOP condition is sent when communication is finished
-    BSP_I2C_SetAutoStopByteCount(bus, r_bytes + w_bytes);
-
-    BSP_I2C_Enable(bus);
-
-    // prepare our
-}
-
-static uint8 BSP_I2C_BusBusy(I2CBus bus) {
-    if (bus == I2C_EXTERNAL_BUS) {
-
-    } else if (bus == I2C_INTERNAL_BUS) {
-
-    }
-}
-
-static void BSP_I2C_Enable(I2CBus bus) {
-    if (bus == I2C_EXTERNAL_BUS) {
-        UCB1CTLW0 &= ~UCSWRST;
-    } else if (bus == I2C_INTERNAL_BUS) {
-        UCB2CTLW0 &= ~UCSWRST;
-    }
-}
-
-static void BSP_I2C_Disable(I2CBus bus) {
-    if (bus == I2C_EXTERNAL_BUS) {
-        UCB1CTLW0 |= UCSWRST;
-    } else if (bus == I2C_INTERNAL_BUS) {
-        UCB2CTLW0 |= UCSWRST;
-    }
-}
-
-// external I2C interrupt service routine
-#pragma vector = USCI_B1_VECTOR
-__interrupt void USCI_B1_ISR(void) {
-    switch(__even_in_range(UCB1IV, UCIV__UCBIT9IFG)) {
-        case UCIV__NONE: // Vector 0: No interrupts
-            break;
-        case UCIV__UCALIFG: // Vector 2: ALIFG
-            break;
-        case UCIV__UCNACKIFG: // Vector 4: NACKIFG
-            break;
-        case UCIV__UCSTTIFG: // Vector 6: STTIFG
-            break;
-        case UCIV__UCSTPIFG: // Vector 8: STPIFG
-            break;
-        case UCIV__UCRXIFG3: // Vector 10: RXIFG3
-            break;
-        case UCIV__UCTXIFG3: // Vector 12: TXIFG3
-            break;
-        case UCIV__UCRXIFG2: // Vector 14: RXIFG2
-            break;
-        case UCIV__UCTXIFG2: // Vector 16: TXIFG2
-            break;
-        case UCIV__UCRXIFG1: // Vector 18: RXIFG1
-            break;
-        case UCIV__UCTXIFG1: // Vector 20: TXIFG1
-            break;
-        case UCIV__UCRXIFG0: // Vector 22: RXIFG0
-            break;
-        case UCIV__UCTXIFG0: // Vector 24: TXIFG0
-            break;
-        case UCIV__UCBCNTIFG: // Vector 26: BCNTIFG
-            break;
-        case UCIV__UCCLTOIFG: // Vector 28: clock low time-out
-            break;
-        case UCIV__UCBIT9IFG: // Vector 30: 9th bit
-            break;
-        default: break;
-    }
-}
-
-// internal I2C interrupt service routine
-#pragma vector = USCI_B2_VECTOR
-__interrupt void USCI_B2_ISR(void) {
-    switch(__even_in_range(UCB2IV, UCIV__UCBIT9IFG)) {
-        case UCIV__NONE: // Vector 0: No interrupts
-            break;
-        case UCIV__UCALIFG: // Vector 2: ALIFG
-            break;
-        case UCIV__UCNACKIFG: // Vector 4: NACKIFG
-            break;
-        case UCIV__UCSTTIFG: // Vector 6: STTIFG
-            break;
-        case UCIV__UCSTPIFG: // Vector 8: STPIFG
-            break;
-        case UCIV__UCRXIFG3: // Vector 10: RXIFG3
-            break;
-        case UCIV__UCTXIFG3: // Vector 12: TXIFG3
-            break;
-        case UCIV__UCRXIFG2: // Vector 14: RXIFG2
-            break;
-        case UCIV__UCTXIFG2: // Vector 16: TXIFG2
-            break;
-        case UCIV__UCRXIFG1: // Vector 18: RXIFG1
-            break;
-        case UCIV__UCTXIFG1: // Vector 20: TXIFG1
-            break;
-        case UCIV__UCRXIFG0: // Vector 22: RXIFG0
-            break;
-        case UCIV__UCTXIFG0: // Vector 24: TXIFG0
-            break;
-        case UCIV__UCBCNTIFG: // Vector 26: BCNTIFG
-            break;
-        case UCIV__UCCLTOIFG: // Vector 28: clock low time-out
-            break;
-        case UCIV__UCBIT9IFG: // Vector 30: 9th bit
-            break;
-        default: break;
-    }
-}
+//I2CResult BSP_I2C_BeginTransmission(I2CBus bus, uint8 addr) {
+//    return I2C_NO_ERROR;
+//}
+//
+//I2CResult BSP_I2C_Write(I2CBus bus, uint8 byte) {
+//    return I2C_NO_ERROR;
+//}
+//
+//I2CResult BSP_I2C_Read(I2CBus bus, uint8 *byte) {
+//
+//}
+//
+//I2CResult BSP_I2C_EndTransmission(I2CBus bus);
+//
+//static I2CResult BSP_I2C_TransmitAndReceive(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_bytes, uint8 * r_buf, uint8 r_bytes) {
+//    if (BSP_I2C_BusBusy(bus)) return I2C_BUS_BUSY;
+//
+//    BSP_I2C_Disable(bus);
+//
+//    // ensures that STOP condition is sent when communication is finished
+//    BSP_I2C_SetAutoStopByteCount(bus, r_bytes + w_bytes);
+//
+//    BSP_I2C_Enable(bus);
+//
+//    // prepare our
+//}
+//
+//// check if a transaction is ongoing
+//static uint8 BSP_I2C_BusBusy(I2CBus bus) {
+//    if (bus == I2C_EXTERNAL_BUS) {
+//        return (UCB1STATW & UCBBUSY);
+//    } else if (bus == I2C_INTERNAL_BUS) {
+//        return (UCB2STATW & UCBBUSY);
+//    }
+//}
+//
+//// enable the bus
+//static void BSP_I2C_Enable(I2CBus bus) {
+//    if (bus == I2C_EXTERNAL_BUS) {
+//        UCB1CTLW0 &= ~UCSWRST;
+//    } else if (bus == I2C_INTERNAL_BUS) {
+//        UCB2CTLW0 &= ~UCSWRST;
+//    }
+//}
+//
+//// disable the bus
+//static void BSP_I2C_Disable(I2CBus bus) {
+//    if (bus == I2C_EXTERNAL_BUS) {
+//        UCB1CTLW0 |= UCSWRST;
+//    } else if (bus == I2C_INTERNAL_BUS) {
+//        UCB2CTLW0 |= UCSWRST;
+//    }
+//}
+//
+//// external (secondary) I2C interrupt service routine
+//#pragma vector = USCI_B1_VECTOR
+//__interrupt void USCI_B1_ISR(void) {
+//    switch(__even_in_range(UCB1IV, UCIV__UCBIT9IFG)) {
+//        case UCIV__NONE: // Vector 0: No interrupts
+//            break;
+//        case UCIV__UCALIFG: // Vector 2: ALIFG
+//            break;
+//        case UCIV__UCNACKIFG: // Vector 4: NACKIFG
+//            break;
+//        case UCIV__UCSTTIFG: // Vector 6: STTIFG
+//            break;
+//        case UCIV__UCSTPIFG: // Vector 8: STPIFG
+//            break;
+//        case UCIV__UCRXIFG3: // Vector 10: RXIFG3
+//            break;
+//        case UCIV__UCTXIFG3: // Vector 12: TXIFG3
+//            break;
+//        case UCIV__UCRXIFG2: // Vector 14: RXIFG2
+//            break;
+//        case UCIV__UCTXIFG2: // Vector 16: TXIFG2
+//            break;
+//        case UCIV__UCRXIFG1: // Vector 18: RXIFG1
+//            break;
+//        case UCIV__UCTXIFG1: // Vector 20: TXIFG1
+//            break;
+//        case UCIV__UCRXIFG0: // Vector 22: RXIFG0
+//            // shift byte out of register into our target buffer
+//            break;
+//        case UCIV__UCTXIFG0: // Vector 24: TXIFG0
+//            break;
+//        case UCIV__UCBCNTIFG: // Vector 26: BCNTIFG
+//            break;
+//        case UCIV__UCCLTOIFG: // Vector 28: clock low time-out
+//            break;
+//        case UCIV__UCBIT9IFG: // Vector 30: 9th bit
+//            break;
+//        default: break;
+//    }
+//}
+//
+//// internal (primary) I2C interrupt service routine
+//#pragma vector = USCI_B2_VECTOR
+//__interrupt void USCI_B2_ISR(void) {
+//    switch(__even_in_range(UCB2IV, UCIV__UCBIT9IFG)) {
+//        case UCIV__NONE: // Vector 0: No interrupts
+//            break;
+//        case UCIV__UCALIFG: // Vector 2: ALIFG
+//            break;
+//        case UCIV__UCNACKIFG: // Vector 4: NACKIFG
+//            break;
+//        case UCIV__UCSTTIFG: // Vector 6: STTIFG
+//            break;
+//        case UCIV__UCSTPIFG: // Vector 8: STPIFG
+//            break;
+//        case UCIV__UCRXIFG3: // Vector 10: RXIFG3
+//            break;
+//        case UCIV__UCTXIFG3: // Vector 12: TXIFG3
+//            break;
+//        case UCIV__UCRXIFG2: // Vector 14: RXIFG2
+//            break;
+//        case UCIV__UCTXIFG2: // Vector 16: TXIFG2
+//            break;
+//        case UCIV__UCRXIFG1: // Vector 18: RXIFG1
+//            break;
+//        case UCIV__UCTXIFG1: // Vector 20: TXIFG1
+//            break;
+//        case UCIV__UCRXIFG0: // Vector 22: RXIFG0
+//            // shift bits out of read register
+//            break;
+//        case UCIV__UCTXIFG0: // Vector 24: TXIFG0
+//            //
+//            break;
+//        case UCIV__UCBCNTIFG: // Vector 26: BCNTIFG
+//            break;
+//        case UCIV__UCCLTOIFG: // Vector 28: clock low time-out
+//            break;
+//        case UCIV__UCBIT9IFG: // Vector 30: 9th bit
+//            break;
+//        default: break;
+//    }
+//}

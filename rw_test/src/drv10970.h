@@ -45,7 +45,7 @@ class DRV10970 {
         void ToggleBrake();
 
         // get brake status
-        void GetBrake() { return BRKMOD_PORT_OUT & BRKMOD_PIN; }
+        uint16_t GetBrake() { return BRKMOD_PORT_OUT & BRKMOD_PIN; }
 
         // sets motor to forward
         void SetDirectionForward();
@@ -57,10 +57,10 @@ class DRV10970 {
         void ToggleDirection();
 
         // get current motor direction
-        Direction GetDirection() { return FR_PORT_OUT & FR_PIN; }
+        uint16_t GetDirection() { return FR_PORT_OUT & FR_PIN; }
 
         // get the current lock status
-        bool GetLockStatus() { return ~(RD_PORT_IN & RD_PIN); }
+        uint16_t GetLockStatus() { return ~(RD_PORT_IN & RD_PIN); }
 
         // get how many times a lock event has occurred
         uint16_t GetLockEventCount() { return lock_events; }
@@ -72,6 +72,7 @@ class DRV10970 {
         const uint8_t POLES = 2;
         const float MIL_TO_MIN = 60000;
         const uint8_t ROTS_TO_COUNT = 3;
+        Direction dir;
 
         float pwm_frequency;
         float rpm;

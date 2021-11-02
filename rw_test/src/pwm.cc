@@ -35,5 +35,5 @@ void PWM::TimerInit() {
     // timer frequency: 32 KHz / 2 = 16 KHz
     // time for one clock cycle: 0.0625 ms
     PWM_TIM_CCTL1 = OUTMOD_7;  // reset/set output mode
-    PWM_TIM_CTL  = TASSEL_1 + ID_1 + MC_1;  // ACLK / 2, up mode, clear, no interrupts
+    PWM_TIM_CTL  = TASSEL_2 + ID_1 + MC_1;  // ACLK / 2, up mode, clear, no interrupts
 }

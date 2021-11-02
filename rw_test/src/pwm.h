@@ -9,6 +9,7 @@
 #define PWM_H_
 
 #include "types.h"
+#include "bsp.h"
 
 class PWM {
     public:
@@ -20,7 +21,7 @@ class PWM {
         PWM(const PWM &) = delete;
 
         // PWM object destructor
-        ~PWM();
+        //~PWM();
 
         // Sets the PWM frequency
         void SetPeriod(uint16_t period);
@@ -29,7 +30,7 @@ class PWM {
         uint16_t GetPeriod() { return PWM_TIM_PERIOD_CC; }
 
         // Sets the PWM period in milliseconds
-        void SetDutyCycle(uint8 duty_cycle);
+        void SetDutyCycle(uint16_t duty_cycle);
 
         // Gets the PWM period in milliseconds
         uint16_t GetDutyCycle() { return PWM_TIM_DUTY_CYCLE_CC; }
