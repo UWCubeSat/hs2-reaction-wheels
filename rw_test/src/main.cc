@@ -11,9 +11,5 @@
 #include <cstdint>
 
 int main() {
-    BSP_Init();
-    while (1) {
-
-    }
-
+    // Do nothing for now
 }
