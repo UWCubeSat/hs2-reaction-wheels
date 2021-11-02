@@ -63,6 +63,7 @@
 
 // Variable duty cycle PWM signal (output)
 #define PWM_PORT_DIR        P1DIR
+#define PWM_PORT_OUT        P1OUT
 #define PWM_PORT_SEL0       P1SEL0
 #define PWM_PORT_SEL1       P1SEL1
 #define PWM_PIN             BIT0
@@ -84,6 +85,8 @@
 // Motor direction control signal (output)
 #define FR_PORT_DIR         P1DIR
 #define FR_PORT_OUT         P1OUT
+#define FR_PORT_IN          P1IN
+#define FR_PORT_REN         P1REN
 #define FR_PORT_SEL0        P1SEL0
 #define FR_PORT_SEL1        P1SEL1
 #define FR_PIN              BIT2
@@ -91,6 +94,8 @@
 // Lock indicator signal (input)
 #define RD_PORT_DIR         P3DIR
 #define RD_PORT_OUT         P3OUT
+#define RD_PORT_IN          P3IN
+#define RD_PORT_REN         P3REN
 #define RD_PORT_SEL0        P3SEL0
 #define RD_PORT_SEL1        P3SEL1
 #define RD_PORT_IES         P3IES
@@ -202,40 +207,5 @@ uint16 BSP_GetResetReason();
 
 // returns time since last reset in milliseconds
 uint64 BSP_GetMET();
-
-// reads register from device on I2C bus
-uint8 BSP_I2C_Transmit(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_bytes);
-
-// writes to device register on I2C bus
-uint8 BSP_I2C_Receive(I2CBus bus, uint8 addr, uint8 * r_buf, uint8 r_bytes);
-
-// reads and writes to device on bus at addr
-uint8 BSP_I2C_TransmitAndReceive(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_bytes, uint8 * r_buf, uint8 r_bytes);
-
-// wait for STOP condition to be sent
-static void BSP_I2C_WaitForStopComplete(I2CBus bus);
-
-// wait for START condition to be sent
-static void BSP_I2C_WaitForStartComplete(I2CBus bus);
-
-// send start condition for transmit
-static void BSP_I2C_TransmitStart(I2CBus bus);
-
-// send stop condition for transmit
-static void BSP_I2C_TransmitStop(I2CBus bus);
-
-// send start condition for receive
-static void BSP_I2C_ReceiveStart(I2CBus bus);
-
-// send stop condition for receive
-static void BSP_I2C_ReceiveStop(I2CBus bus);
-
-static void BSP_I2C_SetAutoStopByteCount(I2CBus bus);
-
-static void BSP_I2C_Enable(I2CBus bus);
-
-static void BSP_I2C_Disable(I2CBus bus);
-
-static uint8 BSP_I2C_BusBusy(I2CBus bus);
 
 #endif /* BSP_H_ */
