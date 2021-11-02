@@ -216,7 +216,7 @@ uint8 BSP_I2C_TransmitAndReceive(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_
 static void BSP_I2C_WaitForStopComplete(I2CBus bus);
 
 // wait for START condition to be sent
-static void BSP_I2C_WaitForStartComplete(I2CBUS bus);
+static void BSP_I2C_WaitForStartComplete(I2CBus bus);
 
 // send start condition for transmit
 static void BSP_I2C_TransmitStart(I2CBus bus);
