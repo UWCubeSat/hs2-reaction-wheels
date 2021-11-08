@@ -160,6 +160,8 @@
 
 #define I2C_BASE_CLOCK_FREQ 16000000 // 16 MHz
 
+#define OWN_ADDRESS         0x48
+
 /*
 ** External Crystal Pin Definitions
 */
