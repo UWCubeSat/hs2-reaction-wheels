@@ -26,9 +26,10 @@ void PWM::SetDutyCycle(uint16_t duty_cycle) {
 }
 
 void PWM::GPIOInit() {
+    // enable PWM pin for TA0.1 = output
     PWM_PORT_DIR |= PWM_PIN;
-    PWM_PORT_SEL0 |= PWM_PIN;  // set to TA0.1 mode
-    PWM_PORT_SEL1 &= ~PWM_PIN;
+    PWM_PORT_SEL0 |= PWM_PIN;
+    PWM_PORT_SEL1 &= ~(PWM_PIN);
 }
 
 void PWM::TimerInit() {

@@ -19,21 +19,23 @@ DRV10970::DRV10970() {
     rpm = 0;
     lock_events = 0;
 
-    // Initialize DRV10970 port IO
-    PWM_PORT_DIR |= PWM_PIN;
+    // Initialize pins
+
+    // break mode pin = output
     BRKMOD_PORT_DIR |= BRKMOD_PIN;
-    FG_PORT_DIR &= ~FG_PIN;
+
+    // freq indicator pin = input
+    FG_PORT_DIR &= ~(FG_PIN);
+    FG_PORT_IES &= ~(FG_PIN);  // low to high edge interrupt
+    FG_PORT_IE |= FG_PIN;  // enable interrupt on FG_PIN
+
+    // motor direction pin = output
     FR_PORT_DIR |= FR_PIN;
-    RD_PORT_DIR &= ~RD_PIN;
 
-    // Initialize pull-up resistors on inputs
-    FG_PORT_REN |= FG_PIN;
-    FG_PORT_OUT |= FG_PIN;
-    RD_PORT_REN |= RD_PIN;
-    RD_PORT_OUT |= RD_PIN;
-
-    // Initialize PWM port
-    PWM_PORT_SEL0 |= PWM_PIN;
+    // lock indicator = input
+    RD_PORT_DIR &= ~(RD_PIN);
+    RD_PORT_IES &= ~(RD_PIN);
+    RD_PORT_IE |= RD_PIN;
 
     // Initialize DRV10970 output values
     // TODO: PWM stuff
@@ -67,4 +69,16 @@ void DRV10970::ToggleDirection() {
 
 void DRV10970::SetPWMFrequency(uint16_t frequency) {
 
+}
+
+#pragma vector=FG_PORT_VECTOR
+__interrupt void DRV10970::monitorRPM() {
+    _disable_interrupt();
+    pulseCount++;
+    if (pulseCount == POLES * ROTS_TO_COUNT) {
+        unsigned long currentTime = BSP_GetMET();
+        unsigned long elapsedTime = currentTime - lastRotTime;
+        rpm = MIL_TO_MIN / ((float) elapsedTime / ROTS_TO_COUNT);
+    }
+    _enable_interrupt();
 }

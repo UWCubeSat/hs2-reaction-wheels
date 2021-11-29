@@ -81,6 +81,7 @@
 #define FG_PORT_IE          P1IE
 #define FG_PIN              BIT1
 #define FG_PORT_REN         P1REN
+#define FG_PORT_VECTOR      PORT1_VECTOR
 
 // Motor direction control signal (output)
 #define FR_PORT_DIR         P1DIR

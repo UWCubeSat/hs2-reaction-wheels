@@ -30,29 +30,6 @@ static void PeriphInit() {
     P8OUT = 0;
     PJOUT = 0;
 
-    // DRV10970 pins
-
-    // enable PWM pin for TA0.1 = output
-    PWM_PORT_DIR |= PWM_PIN;
-    PWM_PORT_SEL0 |= PWM_PIN;
-    PWM_PORT_SEL1 &= ~(PWM_PIN);
-
-    // break mode pin = output
-    BRKMOD_PORT_DIR |= BRKMOD_PIN;
-
-    // freq indicator pin = input
-    FG_PORT_DIR &= ~(FG_PIN);
-    FG_PORT_IES &= ~(FG_PIN);
-    FG_PORT_IE |= FG_PIN;
-
-    // motor direction pin = output
-    FR_PORT_DIR |= FR_PIN;
-
-    // lock indicator = input
-    RD_PORT_DIR &= ~(RD_PIN);
-    RD_PORT_IES &= ~(RD_PIN);
-    RD_PORT_IE |= RD_PIN;
-
 
     // BNO055 pins
 
