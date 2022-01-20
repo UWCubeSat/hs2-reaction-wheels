@@ -52,7 +52,7 @@ enum class Direction {
 class DRV10970 {
     public:
         // Constructor
-        DRV10970();
+        DRV10970(MSP430::GPIOPin, MSP430::GPIOPin, MSP430::GPIOPin, MSP430::GPIOPin, MSP430::GPIOPin, MSP430::Timer pwmTimer);
 
         // Delete copy constructor
         DRV10970(const DRV10970 &) = delete;
@@ -82,16 +82,19 @@ class DRV10970 {
         void ToggleDirection();
 
         // get current motor direction
-        uint16_t GetDirection() { return FR_PORT_OUT & FR_PIN; }
+        uint8_t GetDirection() { return FR_PORT_OUT & FR_PIN; }
 
         // get the current lock status
-        uint16_t GetLockStatus() { return ~(RD_PORT_IN & RD_PIN); }
+        uint8_t GetLockStatus() { return ~(RD_PORT_IN & RD_PIN); }
 
         // get how many times a lock event has occurred
-        uint16_t GetLockEventCount() { return lock_events; }
+        uint8_t GetLockEventCount() { return lock_events; }
 
         // update PWM frequency
         void SetPWMFrequency(uint16_t frequency);
+
+        // update PWM duty cycle
+        void SetPWMDutyCycle(uint8_t duty_cycle);
 
         // get the RPM of the motor
         float GetRPM() { return rpm; }
@@ -105,13 +108,17 @@ class DRV10970 {
         const uint8_t ROTS_TO_COUNT = 3;
         Direction dir;
 
-        float pwm_frequency;
-        PWM pwm;
-        uint32_t lock_events;  // number of detected lock events
+        float _pwm_frequency;
+        PWM _pwm;
+        uint32_t _lock_events;  // number of detected lock events
+        uint32_t _error_count;
 
-        float rpm;
-        unsigned long lastRotTime;
-        volatile int pulseCount;
+        float _rpm;
+        unsigned long _lastRotTime;
+        volatile int _pulseCount;
+
+        // optional
+        void (*_lockIndicatorCallback)();
 };
 
 #endif /* DRV10970_H_ */
