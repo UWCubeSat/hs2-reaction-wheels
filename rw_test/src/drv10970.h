@@ -13,6 +13,8 @@
 
 #include <cstdint>
 
+using namespace MSP430FR5994;
+
 /*
  * The following ports must be made available through defines in bsp.h. See the DRV10970 datasheet for functions.
  * https://www.ti.com/lit/ds/symlink/drv10970.pdf?ts=1633914849399&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FDRV10970
@@ -43,16 +45,16 @@
 //    ERROR,
 //};
 
-enum class Direction {
-    FORWARD = 0,
-    BACKWARD = 1,
-};
-
 
 class DRV10970 {
     public:
+
+        enum Direction {
+            FORWARD = 0,
+            BACKWARD = 1,
+        };
         // Constructor
-        DRV10970(MSP430::GPIOPin, MSP430::GPIOPin, MSP430::GPIOPin, MSP430::GPIOPin, MSP430::GPIOPin, MSP430::Timer pwmTimer);
+        DRV10970(GPIO::Pin, GPIO::Pin, GPIO::Pin, GPIO::Pin, GPIO::Pin, Timer::Handle pwmTimer);
 
         // Delete copy constructor
         DRV10970(const DRV10970 &) = delete;
@@ -88,7 +90,7 @@ class DRV10970 {
         uint8_t GetLockStatus() { return ~(RD_PORT_IN & RD_PIN); }
 
         // get how many times a lock event has occurred
-        uint8_t GetLockEventCount() { return lock_events; }
+        uint8_t GetLockEventCount() { return _lock_events; }
 
         // update PWM frequency
         void SetPWMFrequency(uint16_t frequency);
@@ -97,7 +99,7 @@ class DRV10970 {
         void SetPWMDutyCycle(uint8_t duty_cycle);
 
         // get the RPM of the motor
-        float GetRPM() { return rpm; }
+        float GetRPM() { return _rpm; }
 
         // triggered by interrupts to update rpm calculation values
         __interrupt void monitorRPM();
@@ -106,12 +108,17 @@ class DRV10970 {
         const uint8_t POLES = 2;
         const float MIL_TO_MIN = 60000;
         const uint8_t ROTS_TO_COUNT = 3;
-        Direction dir;
+        Direction _dir;
 
-        float _pwm_frequency;
-        PWM _pwm;
         uint32_t _lock_events;  // number of detected lock events
         uint32_t _error_count;
+
+        GPIO::Pin _brakePin;
+        GPIO::Pin _dirPin;
+        GPIO::Pin _freqPin;
+        GPIO::Pin _lockPin;
+        GPIO::Pin _pwmPin;
+        Timer::Handle _pwmTimer;
 
         float _rpm;
         unsigned long _lastRotTime;

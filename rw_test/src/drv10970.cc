@@ -4,26 +4,27 @@
  *  Created on: May 25, 2021
  *      Author: sailedeer
  *
- *      This file contains a driver for a single Faulhaber motor. It exposes an interface
- *      which can be used to completely control the motor.
+ *      This file contains a driver for DRV10970 Motor Driver IC. It exposes an interface
+ *      which can be used to completely control a compatible motor.
  */
 
-#include <msp430fr5994/gpio.h>
 #include <cstdint>
+#include <msp430fr5994/gpio.h>
+#include <bsp.h>
+#include <drv10970.h>
+#include <msp430fr5994/timer.h>
 
-#include "bsp.h"
-#include "drv10970.h"
-#include "msp430/timer.h"
+using namespace MSP430FR5994;
 
-DRV10970::DRV10970(MSP430::GPIO::Pin brakePin, MSP430::GPIO::Pin freqPin,
-                   MSP430::GPIO::Pin dirPin, MSP430::GPIO::Pin lockPin,
-                   MSP430::GPIO::Pin pwmPin, MSP430::Timer pwmTimer) {
+DRV10970::DRV10970(GPIO::Pin brakePin, GPIO::Pin freqPin,
+                   GPIO::Pin dirPin, GPIO::Pin lockPin,
+                   GPIO::Pin pwmPin, Timer::Handle pwmTimer) {
 
     // Initialize class variables
-    dir = Direction::FORWARD;
-    pwm_frequency = 0;  // TODO set to appropriate value
-    rpm = 0;
-    lock_events = 0;
+    _dir = Direction::FORWARD;
+    _pwm_frequency = 0;  // TODO set to appropriate value
+    _rpm = 0;
+    _lock_events = 0;
     _brakePin = brakePin;
     _freqPin = freqPin;
     _dirPin = dirPin;
@@ -32,30 +33,17 @@ DRV10970::DRV10970(MSP430::GPIO::Pin brakePin, MSP430::GPIO::Pin freqPin,
     _pwmTimer = pwmTimer;
 
     // Initialize pins
+    GPIO::SetPinDirection(brakePin, GPIO::OUTPUT);
 
-    // break mode pin = output
-//    BRKMOD_PORT_DIR |= BRKMOD_PIN;
-    MSP430::GPIO::SetPinDirection(brakePin, MSP430::GPIO::OUTPUT);
+    GPIO::SetPinDirection(freqPin, GPIO::INPUT);
+    GPIO::SetInterruptEventSource(freqPin, GPIO::LOW_TO_HIGH_EDGE);
+    GPIO::EnableInterrupt(freqPin);
 
-    // freq indicator pin = input
-//    FG_PORT_DIR &= ~(FG_PIN);
-    MSP430::GPIO::SetPinDirection(freqPin, MSP430::GPIO::INPUT);
-//    FG_PORT_IES &= ~(FG_PIN);  // low to high edge interrupt
-    MSP430::GPIO::SetInterruptEventSource(freqPin, MSP430::GPIO::LOW_TO_HIGH_EDGE);
-//    FG_PORT_IE |= FG_PIN;  // enable interrupt on FG_PIN
-    MSP430::GPIO::EnableInterrupt(freqPin);
+    GPIO::SetPinDirection(dirPin, GPIO::OUTPUT);
 
-    // motor direction pin = output
-//    FR_PORT_DIR |= FR_PIN;
-    MSP430::GPIO:SetPinDirection(dirPin, MSP430::GPIO::OUTPUT);
-
-    // lock indicator = input
-//    RD_PORT_DIR &= ~(RD_PIN);
-    MSP430::GPIO::SetPinDirection(lockPin, MSP430::GPIO::INPUT);
-//    RD_PORT_IES &= ~(RD_PIN);
-    MSP430::GPIO::SetInterruptEventSource(lockPin, MSP430::GPIO::LOW_TO_HIGH_EDGE);
-//    RD_PORT_IE |= RD_PIN;
-    MSP430::GPIO::EnableInterrupt(lockPin);
+    GPIO::SetPinDirection(lockPin, GPIO::INPUT);
+    GPIO::SetInterruptEventSource(lockPin, GPIO::LOW_TO_HIGH_EDGE);
+    GPIO::EnableInterrupt(lockPin);
 
     // Initialize DRV10970 output values
     // TODO: PWM stuff
@@ -65,32 +53,36 @@ DRV10970::DRV10970(MSP430::GPIO::Pin brakePin, MSP430::GPIO::Pin freqPin,
 
 void DRV10970::EnableBrake() {
 //    BRKMOD_PORT_OUT |= BRKMOD_PIN;
-    MSP430::GPIO::SetPinValue(_brakePin, MSP430::GPIO::HIGH);
+    GPIO::SetPinValue(_brakePin, GPIO::HIGH);
 }
 
 void DRV10970::DisableBrake() {
 //    BRKMOD_PORT_OUT &= ~BRKMOD_PIN;
-    MSP430::GPIO::SetPinValue(_brakePin, MSP430::GPIO::LOW);
+    GPIO::SetPinValue(_brakePin, GPIO::LOW);
 }
 
 void DRV10970::ToggleBrake() {
 //    BRKMOD_PORT_OUT ^= BRKMOD_PIN;
-    MSP430::GPIO::TogglePinValue(_brakePin);
+    GPIO::TogglePinValue(_brakePin);
 }
 
 void DRV10970::SetDirectionForward() {
 //    FR_PORT_OUT &= ~FR_PIN;
-    MSP430::GPIO::SetValue(_dirPin, MSP430::GPIO::LOW);
+    GPIO::SetPinValue(_dirPin, GPIO::LOW);
 }
 
 void DRV10970::SetDirectionBackward() {
 //    FR_PORT_OUT |= FR_PIN;
-    MSP430::GPIO::SetValue(_dirPin, MSP430::GPIO::HIGH);
+    GPIO::SetPinValue(_dirPin, GPIO::HIGH);
 }
 
 void DRV10970::ToggleDirection() {
 //    FR_PORT_OUT ^= FR_PIN;
-    MSP430::GPIO::
+    if (_dir == FORWARD) {
+        DRV10970::SetDirectionForward();
+    } else {
+        DRV10970::SetDirectionBackward();
+    }
 }
 
 void DRV10970::SetPWMFrequency(uint16_t frequency) {
@@ -101,14 +93,14 @@ void DRV10970::SetPWMDutyCycle(uint8_t dutyCycle) {
 
 }
 
-#pragma vector=FG_PORT_VECTOR
-__interrupt void DRV10970::monitorRPM() {
-    _disable_interrupt();
-    pulseCount++;
-    if (pulseCount == POLES * ROTS_TO_COUNT) {
-        unsigned long currentTime = BSP_GetMET();
-        unsigned long elapsedTime = currentTime - lastRotTime;
-        rpm = MIL_TO_MIN / ((float) elapsedTime / ROTS_TO_COUNT);
-    }
-    _enable_interrupt();
-}
+//#pragma vector=FG_PORT_VECTOR
+//__interrupt void DRV10970::monitorRPM() {
+//    _disable_interrupt();
+//    _pulseCount++;
+//    if (_pulseCount == POLES * ROTS_TO_COUNT) {
+//        unsigned long currentTime = BSP_GetMET();
+//        unsigned long elapsedTime = currentTime - _lastRotTime;
+//        _rpm = MIL_TO_MIN / ((float) elapsedTime / ROTS_TO_COUNT);
+//    }
+//    _enable_interrupt();
+//}
