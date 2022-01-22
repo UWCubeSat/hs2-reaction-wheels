@@ -8,10 +8,11 @@
 #ifndef DRV10970_H_
 #define DRV10970_H_
 
-#include "bsp.h"
-#include "pwm.h"
-
 #include <cstdint>
+
+#include "bsp.h"
+#include "msp430fr5994/gpio.h"
+#include "msp430fr5994/timer.h"
 
 using namespace MSP430FR5994;
 
@@ -48,13 +49,14 @@ using namespace MSP430FR5994;
 
 class DRV10970 {
     public:
-
         enum Direction {
             FORWARD = 0,
             BACKWARD = 1,
         };
+
         // Constructor
-        DRV10970(GPIO::Pin, GPIO::Pin, GPIO::Pin, GPIO::Pin, GPIO::Pin, Timer::Handle pwmTimer);
+        DRV10970(GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, GPIO::Pin&,
+                 GPIO::Pin&, Timer::Handle&);
 
         // Delete copy constructor
         DRV10970(const DRV10970 &) = delete;
@@ -101,9 +103,6 @@ class DRV10970 {
         // get the RPM of the motor
         float GetRPM() { return _rpm; }
 
-        // triggered by interrupts to update rpm calculation values
-        __interrupt void monitorRPM();
-
     private:
         const uint8_t POLES = 2;
         const float MIL_TO_MIN = 60000;
@@ -113,19 +112,19 @@ class DRV10970 {
         uint32_t _lock_events;  // number of detected lock events
         uint32_t _error_count;
 
-        GPIO::Pin _brakePin;
-        GPIO::Pin _dirPin;
-        GPIO::Pin _freqPin;
-        GPIO::Pin _lockPin;
-        GPIO::Pin _pwmPin;
-        Timer::Handle _pwmTimer;
+        GPIO::Pin &_brakePin;
+        GPIO::Pin &_dirPin;
+        GPIO::Pin &_rpmPin;
+        GPIO::Pin &_lockPin;
+        GPIO::Pin &_pwmPin;
+        Timer::Handle &_pwmTimer;
 
         float _rpm;
         unsigned long _lastRotTime;
         volatile int _pulseCount;
 
         // optional
-        void (*_lockIndicatorCallback)();
+        GPIO::Pin::CallbackFuncPtr _lockCallback;
 };
 
 #endif /* DRV10970_H_ */

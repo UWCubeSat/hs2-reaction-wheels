@@ -16,34 +16,27 @@
 
 using namespace MSP430FR5994;
 
-DRV10970::DRV10970(GPIO::Pin brakePin, GPIO::Pin freqPin,
-                   GPIO::Pin dirPin, GPIO::Pin lockPin,
-                   GPIO::Pin pwmPin, Timer::Handle pwmTimer) {
-
-    // Initialize class variables
-    _dir = Direction::FORWARD;
-    _pwm_frequency = 0;  // TODO set to appropriate value
-    _rpm = 0;
-    _lock_events = 0;
-    _brakePin = brakePin;
-    _freqPin = freqPin;
-    _dirPin = dirPin;
-    _lockPin = lockPin;
-    _pwmPin = pwmPin;
-    _pwmTimer = pwmTimer;
+DRV10970::DRV10970(GPIO::Pin &brakePin, GPIO::Pin &rpmPin,
+                   GPIO::Pin &dirPin, GPIO::Pin &lockPin,
+                   GPIO::Pin &pwmPin, Timer::Handle &pwmTimer) :
+                           _brakePin(brakePin), _rpmPin(rpmPin),
+                           _dirPin(dirPin), _lockPin(lockPin),
+                           _pwmPin(pwmPin), _pwmTimer(pwmTimer) {
 
     // Initialize pins
-    GPIO::SetPinDirection(brakePin, GPIO::OUTPUT);
+    _brakePin.SetDirection(GPIO::Pin::OUTPUT);
 
-    GPIO::SetPinDirection(freqPin, GPIO::INPUT);
-    GPIO::SetInterruptEventSource(freqPin, GPIO::LOW_TO_HIGH_EDGE);
-    GPIO::EnableInterrupt(freqPin);
+    _rpmPin.SetDirection(GPIO::Pin::INPUT);
+    _rpmPin.SetInterruptEventSource(GPIO::Pin::LOW_TO_HIGH_EDGE);
+    _rpmPin.AttachCallback();
+    _rpmPin.EnableInterrupt();
 
-    GPIO::SetPinDirection(dirPin, GPIO::OUTPUT);
+    _dirPin.SetDirection(GPIO::Pin::OUTPUT);
 
-    GPIO::SetPinDirection(lockPin, GPIO::INPUT);
-    GPIO::SetInterruptEventSource(lockPin, GPIO::LOW_TO_HIGH_EDGE);
-    GPIO::EnableInterrupt(lockPin);
+    _lockPin.SetDirection(GPIO::Pin::INPUT);
+    _lockPin.SetInterruptEventSource(GPIO::Pin::LOW_TO_HIGH_EDGE);
+    _lockPin.AttachCallback(_lockCallback);
+    _lockPin.EnableInterrupt();
 
     // Initialize DRV10970 output values
     // TODO: PWM stuff
@@ -58,35 +51,31 @@ void DRV10970::EnableBrake() {
 
 void DRV10970::DisableBrake() {
 //    BRKMOD_PORT_OUT &= ~BRKMOD_PIN;
-    GPIO::SetPinValue(_brakePin, GPIO::LOW);
+    _brakePin.SetValue(Pin::LOW);
 }
 
 void DRV10970::ToggleBrake() {
 //    BRKMOD_PORT_OUT ^= BRKMOD_PIN;
-    GPIO::TogglePinValue(_brakePin);
+    _brakePin.ToggleValue();
 }
 
 void DRV10970::SetDirectionForward() {
 //    FR_PORT_OUT &= ~FR_PIN;
-    GPIO::SetPinValue(_dirPin, GPIO::LOW);
+    _dirPin.Write(Pin::LOW);
 }
 
 void DRV10970::SetDirectionBackward() {
 //    FR_PORT_OUT |= FR_PIN;
-    GPIO::SetPinValue(_dirPin, GPIO::HIGH);
+    _dirPin.Write(Pin::HIGH);
 }
 
 void DRV10970::ToggleDirection() {
 //    FR_PORT_OUT ^= FR_PIN;
     if (_dir == FORWARD) {
-        DRV10970::SetDirectionForward();
-    } else {
         DRV10970::SetDirectionBackward();
+    } else {
+        DRV10970::SetDirectionForward();
     }
-}
-
-void DRV10970::SetPWMFrequency(uint16_t frequency) {
-
 }
 
 void DRV10970::SetPWMDutyCycle(uint8_t dutyCycle) {
