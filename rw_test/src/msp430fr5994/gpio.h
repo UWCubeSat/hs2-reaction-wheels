@@ -5,65 +5,105 @@
  *      Author: sailedeer
  */
 
-#ifndef MSP430_GPIO_H_
-#define MSP430_GPIO_H_
+#ifndef MSP430FR5994_GPIO_H_
+#define MSP430FR5994_GPIO_H_
 
 #include "types.h"
 
-namespace MSP430 {
+namespace MSP430FR5994 {
 
     namespace GPIO {
 
         enum Port {
-            P1,
-            P2,
-            P3,
-            P4,
-            P5,
-            P6,
-            P7,
-            P8,
-            PJ
+            PORT1,
+            PORT2,
+            PORT3,
+            PORT4,
+            PORT5,
+            PORT6,
+            PORT7,
+            PORT8,
+            PORTJ
         };
 
-        enum Direction {
-            INPUT,
-            OUTPUT
-        };
+        class Pin {
+            public:
+                enum Direction {
+                    INPUT = 0x00,
+                    OUTPUT
+                };
 
-        enum Value {
-            FLOATING,   // if pull-up/down is disabled,
-            LOW,
-            HIGH
-        };
+                enum Value {
+                    LOW = 0x00,
+                    HIGH,
 
-        enum InterruptSource {
-            LOW_TO_HIGH_EDGE,
-            HIGH_TO_LOW_EDGE
-        };
+                };
 
-        extern struct Pin;
+                enum InterruptSource {
+                    LOW_TO_HIGH_EDGE,
+                    HIGH_TO_LOW_EDGE,
+                    INTERRUPT_DISABLED
+                };
 
-        Direction GetPinDirection(Pin);
+                enum Function {
+                    NONE,
+                    PRIMARY,
+                    SECONDARY,
+                    TERTIARY
+                };
 
-        void SetPinDirection(Pin, Direction);
+                typedef void (*CallbackFuncPtr)();
 
-        void SetInterruptEventSource(Pin, InterruptSource);
+                Pin();
 
-        InterruptSource GetInterruptEventSource(Pin);
+                // disable copy constructor
+                Pin(const Pin&) = delete;
 
-        void EnableInterrupt(Pin);
+                /*
+                 * Marks underlying pin handle as free if it is in use
+                 */
+                ~Pin();
 
-        void DisableInterrupt(Pin);
+                bool Attach(Port, uint8_t);
 
-        void SetPinValue(Pin, Value);
+                void Detach();
 
-        Value GetPinValue(Pin);
+                Direction GetDirection();
 
-        void TogglePinValue(Pin);
+                void SetDirection(Direction);
 
+                void SetInterruptEventSource(InterruptSource);
+
+                InterruptSource GetInterruptEventSource();
+
+                void EnableInterrupt();
+
+                void DisableInterrupt();
+
+                void Write(Value);
+
+                Value Read();
+
+                void ToggleOutput();
+
+                void SetFunctionMode(Function);
+
+                Function GetFunctionMode() const;
+
+                void AttachCallback(CallbackFuncPtr);
+
+                void DetachCallback();
+
+            private:
+                uint8_t _bitMask;
+                uint8_t _bit;
+                uint8_t _portIdx;
+                uint8_t _attached;
+
+
+
+        };  // class Pin
     }   // namespace GPIO
-
 }   // namespace MSP430
 
-#endif /* MSP430_GPIO_H_ */
+#endif /* MSP430FR5994_GPIO_H_ */

@@ -6,6 +6,7 @@
  */
 
 #include <cstdint>
+#include <cstring>
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,12 +16,14 @@ extern "C" {
 }
 #endif
 
-#include <msp430fr5994/gpio.h>
+#include "gpio.h"
 
-using namespace MSP430;
+using namespace MSP430FR5994::GPIO;
 
-// represents a GPIO port base
-static struct GPIOPort {
+constexpr uint8_t PIN_COUNT = 8;
+constexpr uint8_t PORT_COUNT = 9;
+
+typedef struct {
     // generates padding of n bytes; with id as an arbitrary unique
     // identifier for each instance of padding per namespace
     // intended to be used to align bytes in register structs
@@ -44,22 +47,148 @@ static struct GPIOPort {
     uint8_t ie;        // (0x001A)
     __PADDING(8, 0x1);
     uint8_t ifg;       // (0x001C)
+} gpio_port_s, *gpio_port_ptr_t;
+
+typedef struct {
+   Pin::CallbackFuncPtr tbl[PIN_COUNT];
+} cb_func_ptr_tbl_t;
+
+
+// array of pointers to GPIO
+static volatile gpio_port_ptr_t bases[PORT_COUNT] = {
+    (gpio_port_ptr_t)  P1_BASE,
+    (gpio_port_ptr_t) (P2_BASE + 0x1),  // even, offset by 1 byte
+    (gpio_port_ptr_t)  P3_BASE,
+    (gpio_port_ptr_t) (P4_BASE + 0x1),  // even, offset by 1 byte
+    (gpio_port_ptr_t)  P5_BASE,
+    (gpio_port_ptr_t) (P6_BASE + 0x1),  // even, offset by 1 byte
+    (gpio_port_ptr_t)  P7_BASE,
+    (gpio_port_ptr_t) (P8_BASE + 0x1),  // even, offset by 1 byte
+    (gpio_port_ptr_t)  PJ_BASE
 };
 
-static volatile *GPIOBase bases[9] = {
-    (struct GPIOPx *)  P1_BASE,
-    (struct GPIOPx *) (P2_BASE + 0x1),  // offset by 1 byte
-    (struct GPIOPx *)  P3_BASE,
-    (struct GPIOPx *) (P4_BASE + 0x1),  // offset by 1 byte
-    (struct GPIOPx *)  P5_BASE,
-    (struct GPIOPx *) (P6_BASE + 0x1),  // offset by 1 byte
-    (struct GPIOPx *)  P7_BASE,
-    (struct GPIOPx *) (P8_BASE + 0x1),  // offset by 1 byte
-    (struct GPIOPx *)  PJ_BASE
-};
+static uint8_t pinInUseTbl[PIN_COUNT] = {0};
 
-GPIO::Direction GPIO::GetPinDirection(GPIO::Pin pin) {
-    GPIOBase *base = bases[pin.base];
+static cb_func_ptr_tbl_t portCallbackTbl[PORT_COUNT] = {0};
+
+static inline gpio_port_ptr_t getBasePtr(uint8_t portIdx) {
+    return bases[portIdx];
 }
 
+Pin::Direction Pin::GetDirection() {
+    gpio_port_ptr_t base = getBasePtr(this->_portIdx);
+    if (base->dir & this->_bitMask) {
+        return Pin::OUTPUT;
+    } else {
+        return Pin::INPUT;
+    }
+}
 
+void Pin::SetDirection(Pin::Direction dir) {
+    gpio_port_ptr_t base = getBasePtr(this->_portIdx);
+    if (dir == Pin::OUTPUT) {
+        base->dir |= this->_bitMask;
+    } else {
+        base->sel0 &= ~(this->_bitMask);
+        base->sel1 &= ~(this->_bitMask);
+        base->dir &= ~(this->_bitMask);
+        base->ren &= ~(this->_bitMask);
+    }
+}
+
+void Pin::SetInterruptEventSource(Pin::InterruptSource src) {
+    gpio_port_ptr_t base = getBasePtr(this->_portIdx);
+    if (src == Pin::LOW_TO_HIGH_EDGE) {
+        base->ies &= ~(this->_bitMask);
+    } else {
+        base->ies |= this->_bitMask;
+    }
+}
+
+Pin::InterruptSource Pin::GetInterruptEventSource() {
+    gpio_port_ptr_t base = getBasePtr(this->_portIdx);
+    if (base->ies & this->_bitMask) {
+        return Pin::HIGH_TO_LOW_EDGE;
+    } else {
+        return Pin::LOW_TO_HIGH_EDGE;
+    }
+}
+
+void Pin::EnableInterrupt() {
+    gpio_port_ptr_t base = getBasePtr(this->_portIdx);
+    base->ie |= this->_bitMask;
+}
+
+void Pin::DisableInterrupt() {
+    gpio_port_ptr_t base = getBasePtr(this->_portIdx);
+    base->ie &= ~(this->_bitMask);
+}
+
+void Pin::Write(Pin::Value val) {
+    gpio_port_ptr_t base = getBasePtr(this->_portIdx);
+    if (val == Pin::LOW) {
+        base->out &= ~(this->_bitMask);
+    } else {
+        base->out |= this->_bitMask;
+    }
+}
+
+Pin::Value Pin::Read() {
+    gpio_port_ptr_t base = getBasePtr(this->_portIdx);
+    if (this->GetDirection() == Pin::INPUT && (base->in & this->_bitMask)) {
+        return Pin::HIGH;
+    } else {
+        return Pin::LOW;
+    }
+}
+
+void Pin::ToggleOutput() {
+    gpio_port_ptr_t base = getBasePtr(this->_portIdx);
+    if (this->GetDirection() == Pin::OUTPUT)
+    base->out ^= this->_bitMask;
+}
+
+void Pin::SetFunctionMode(Pin::Function mode) {
+    gpio_port_ptr_t base = getBasePtr(this->_portIdx);
+    switch (mode) {
+        case Pin::NONE:
+            base->sel0 &= ~(this->_bitMask);
+            base->sel1 &= ~(this->_bitMask);
+            break;
+        case Pin::PRIMARY:
+            base->sel0 |= this->_bitMask;
+            base->sel1 &= ~(this->_bitMask);
+            break;
+        case Pin::SECONDARY:
+            base->sel0 &= ~(this->_bitMask);
+            base->sel1 |= this->_bitMask;
+            break;
+        case Pin::TERTIARY:
+            base->sel0 |= this->_bitMask;
+            base->sel1 |= this->_bitMask;
+            break;
+    }
+}
+
+Pin::Function Pin::GetFunctionMode() const {
+    gpio_port_ptr_t base = getBasePtr(this->_portIdx);
+    if (!(base->sel0 & this->_bitMask) && !(base->sel1 & this->_bitMask)) {
+        return Pin::NONE;
+    } else if (base->sel0 & this->_bitMask && ~(base->sel1 & this->_bitMask)) {
+        return Pin::PRIMARY;
+    } else if (!(base->sel0 & this->_bitMask) && base->sel1 & this->_bitMask) {
+        return Pin::SECONDARY;
+    } else {
+        return Pin::TERTIARY;
+    }
+}
+
+void Pin::AttachCallback(Pin::CallbackFuncPtr func) {
+    if (func) {
+        (portCallbackTbl[this->_portIdx]).tbl[this->_bit] = func;
+    }
+}
+
+void Pin::DetachCallback() {
+    (portCallbackTbl[this->_portIdx]).tbl[this->_bit] = nullptr;
+}
