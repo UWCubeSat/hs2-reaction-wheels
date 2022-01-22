@@ -13,94 +13,97 @@
 namespace MSP430FR5994 {
 
     namespace GPIO {
+
         enum Port {
-            P1,
-            P2,
-            P3,
-            P4,
-            P5,
-            P6,
-            P7,
-            P8,
-            PJ
+            PORT1,
+            PORT2,
+            PORT3,
+            PORT4,
+            PORT5,
+            PORT6,
+            PORT7,
+            PORT8,
+            PORTJ
         };
 
-        enum PinID {
-            PIN0 = 0x1,
-            PIN1,
-            PIN2,
-            PIN3,
-            PIN4,
-            PIN5,
-            PIN6,
-            PIN7,
-        };
+        class Pin {
+            public:
+                enum Direction {
+                    INPUT = 0x00,
+                    OUTPUT
+                };
 
-        enum Direction {
-            INPUT,
-            OUTPUT
-        };
+                enum Value {
+                    LOW = 0x00,
+                    HIGH,
 
-        enum Value {
-            LOW,
-            HIGH
-        };
+                };
 
-        enum InterruptSource {
-            LOW_TO_HIGH_EDGE,
-            HIGH_TO_LOW_EDGE
-        };
+                enum InterruptSource {
+                    LOW_TO_HIGH_EDGE,
+                    HIGH_TO_LOW_EDGE,
+                    INTERRUPT_DISABLED
+                };
 
-        enum Function {
-            NONE,
-            PRIMARY,
-            SECONDARY,
-            TERTIARY
-        };
+                enum Function {
+                    NONE,
+                    PRIMARY,
+                    SECONDARY,
+                    TERTIARY
+                };
 
-        struct Pin {
-            Pin(PinID pinId, Port base) {
-                id = pinId;
-                port = base;
-            }
-            Pin(const Pin& rhs) {
-                id = rhs.id;
-                port = rhs.port;
-            }
-            PinID id;
-            Port port;
-        };
+                typedef void (*CallbackFuncPtr)();
 
-        typedef void (*callbackFunctionPtr)();
+                Pin();
 
-        Direction GetPinDirection(Pin);
+                // disable copy constructor
+                Pin(const Pin&) = delete;
 
-        void SetPinDirection(Pin, Direction);
+                /*
+                 * Marks underlying pin handle as free if it is in use
+                 */
+                ~Pin();
 
-        void SetInterruptEventSource(Pin, InterruptSource);
+                bool Attach(Port, uint8_t);
 
-        InterruptSource GetInterruptEventSource(Pin);
+                void Detach();
 
-        void EnableInterrupt(Pin);
+                Direction GetDirection();
 
-        void DisableInterrupt(Pin);
+                void SetDirection(Direction);
 
-        void SetPinValue(Pin, Value);
+                void SetInterruptEventSource(InterruptSource);
 
-        Value GetPinValue(Pin);
+                InterruptSource GetInterruptEventSource();
 
-        void TogglePinValue(Pin);
+                void EnableInterrupt();
 
-        void SetPinFunctionMode(Pin, Function);
+                void DisableInterrupt();
 
-        Function GetPinFunctionMode(Pin);
+                void Write(Value);
 
-        void AttachInterruptToPin(const Pin&, callbackFunctionPtr);
+                Value Read();
 
-        void DetachInterruptFromPin(const Pin&);
+                void ToggleOutput();
 
+                void SetFunctionMode(Function);
+
+                Function GetFunctionMode() const;
+
+                void AttachCallback(CallbackFuncPtr);
+
+                void DetachCallback();
+
+            private:
+                uint8_t _bitMask;
+                uint8_t _bit;
+                uint8_t _portIdx;
+                uint8_t _attached;
+
+
+
+        };  // class Pin
     }   // namespace GPIO
-
 }   // namespace MSP430
 
 #endif /* MSP430FR5994_GPIO_H_ */
