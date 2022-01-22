@@ -52,9 +52,23 @@ namespace MSP430FR5994 {
                     TERTIARY
                 };
 
+                enum Resistor {
+                    PULL_DOWN,
+                    PULL_UP,
+                    NO_RESISTOR
+                };
+
+                enum Status {
+                    UNSUPPORTED,
+                    ATTACHED,
+                    IN_USE
+                };
+
                 typedef void (*CallbackFuncPtr)();
 
-                Pin();
+                static const uint32_t INVALID_CB_ADDR = 0;
+
+                Pin(Port, uint8_t);
 
                 // disable copy constructor
                 Pin(const Pin&) = delete;
@@ -64,17 +78,13 @@ namespace MSP430FR5994 {
                  */
                 ~Pin();
 
-                bool Attach(Port, uint8_t);
-
-                void Detach();
-
-                Direction GetDirection();
+                Direction GetDirection() const;
 
                 void SetDirection(Direction);
 
                 void SetInterruptEventSource(InterruptSource);
 
-                InterruptSource GetInterruptEventSource();
+                InterruptSource GetInterruptEventSource() const;
 
                 void EnableInterrupt();
 
@@ -82,9 +92,13 @@ namespace MSP430FR5994 {
 
                 void Write(Value);
 
-                Value Read();
+                Value Read() const;
 
                 void ToggleOutput();
+
+                void SetResistor(Resistor);
+
+                Resistor GetResistor();
 
                 void SetFunctionMode(Function);
 
@@ -94,13 +108,13 @@ namespace MSP430FR5994 {
 
                 void DetachCallback();
 
+                Status GetStatus() const { return (Status)_status; }
+
             private:
                 uint8_t _bitMask;
                 uint8_t _bit;
                 uint8_t _portIdx;
-                uint8_t _attached;
-
-
+                uint8_t _status;
 
         };  // class Pin
     }   // namespace GPIO
