@@ -55,8 +55,9 @@ class DRV10970 {
         };
 
         // Constructor
-        DRV10970(GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, GPIO::Pin&,
-                 GPIO::Pin&, Timer::Handle&);
+        DRV10970(GPIO::Pin &brakePin, GPIO::Pin &rpmPin,
+                 GPIO::Pin &dirPin, GPIO::Pin &lockPin,
+                 GPIO::Pin &pwmPin, Timer::PWM &pwmTimer);
 
         // Delete copy constructor
         DRV10970(const DRV10970 &) = delete;
@@ -117,7 +118,7 @@ class DRV10970 {
         GPIO::Pin &_rpmPin;
         GPIO::Pin &_lockPin;
         GPIO::Pin &_pwmPin;
-        Timer::Handle &_pwmTimer;
+        Timer::PWM &_pwmTimer;
 
         float _rpm;
         unsigned long _lastRotTime;

@@ -18,7 +18,7 @@ using namespace MSP430FR5994;
 
 DRV10970::DRV10970(GPIO::Pin &brakePin, GPIO::Pin &rpmPin,
                    GPIO::Pin &dirPin, GPIO::Pin &lockPin,
-                   GPIO::Pin &pwmPin, Timer::Handle &pwmTimer) :
+                   GPIO::Pin &pwmPin, Timer::PWM &pwmTimer) :
                            _brakePin(brakePin), _rpmPin(rpmPin),
                            _dirPin(dirPin), _lockPin(lockPin),
                            _pwmPin(pwmPin), _pwmTimer(pwmTimer) {
@@ -28,14 +28,12 @@ DRV10970::DRV10970(GPIO::Pin &brakePin, GPIO::Pin &rpmPin,
 
     _rpmPin.SetDirection(GPIO::Pin::INPUT);
     _rpmPin.SetInterruptEventSource(GPIO::Pin::LOW_TO_HIGH_EDGE);
-    _rpmPin.AttachCallback();
     _rpmPin.EnableInterrupt();
 
     _dirPin.SetDirection(GPIO::Pin::OUTPUT);
 
     _lockPin.SetDirection(GPIO::Pin::INPUT);
     _lockPin.SetInterruptEventSource(GPIO::Pin::LOW_TO_HIGH_EDGE);
-    _lockPin.AttachCallback(_lockCallback);
     _lockPin.EnableInterrupt();
 
     // Initialize DRV10970 output values
@@ -46,27 +44,27 @@ DRV10970::DRV10970(GPIO::Pin &brakePin, GPIO::Pin &rpmPin,
 
 void DRV10970::EnableBrake() {
 //    BRKMOD_PORT_OUT |= BRKMOD_PIN;
-    GPIO::SetPinValue(_brakePin, GPIO::HIGH);
+    _brakePin.Write(GPIO::Pin::HIGH);
 }
 
 void DRV10970::DisableBrake() {
 //    BRKMOD_PORT_OUT &= ~BRKMOD_PIN;
-    _brakePin.SetValue(Pin::LOW);
+    _brakePin.Write(GPIO::Pin::LOW);
 }
 
 void DRV10970::ToggleBrake() {
 //    BRKMOD_PORT_OUT ^= BRKMOD_PIN;
-    _brakePin.ToggleValue();
+    _brakePin.ToggleOutput();
 }
 
 void DRV10970::SetDirectionForward() {
 //    FR_PORT_OUT &= ~FR_PIN;
-    _dirPin.Write(Pin::LOW);
+    _dirPin.Write(GPIO::Pin::LOW);
 }
 
 void DRV10970::SetDirectionBackward() {
 //    FR_PORT_OUT |= FR_PIN;
-    _dirPin.Write(Pin::HIGH);
+    _dirPin.Write(GPIO::Pin::HIGH);
 }
 
 void DRV10970::ToggleDirection() {
@@ -79,17 +77,6 @@ void DRV10970::ToggleDirection() {
 }
 
 void DRV10970::SetPWMDutyCycle(uint8_t dutyCycle) {
-
+    __no_operation();
+    // _pwmTimer.SetCC(dutyCycle);
 }
-
-//#pragma vector=FG_PORT_VECTOR
-//__interrupt void DRV10970::monitorRPM() {
-//    _disable_interrupt();
-//    _pulseCount++;
-//    if (_pulseCount == POLES * ROTS_TO_COUNT) {
-//        unsigned long currentTime = BSP_GetMET();
-//        unsigned long elapsedTime = currentTime - _lastRotTime;
-//        _rpm = MIL_TO_MIN / ((float) elapsedTime / ROTS_TO_COUNT);
-//    }
-//    _enable_interrupt();
-//}
