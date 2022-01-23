@@ -260,6 +260,7 @@ Pin::Function Pin::GetFunctionMode() const {
 
 void Pin::AttachCallback(Pin::CallbackFuncPtr func) {
     if (func) {
+        this->EnableInterrupt();
         (portCallbackTbl[this->_portIdx]).tbl[this->_bit] = func;
     }
 }
