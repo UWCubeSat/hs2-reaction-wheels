@@ -12,16 +12,15 @@
 #include <msp430fr5994/gpio.h>
 #include <bsp.h>
 #include <drv10970.h>
-#include <msp430fr5994/timer.h>
 
 using namespace MSP430FR5994;
 
 DRV10970::DRV10970(GPIO::Pin &brakePin, GPIO::Pin &rpmPin,
                    GPIO::Pin &dirPin, GPIO::Pin &lockPin,
-                   GPIO::Pin &pwmPin, Timer::PWM &pwmTimer) :
+                   GPIO::Pin &pwmPin) :
                            _brakePin(brakePin), _rpmPin(rpmPin),
                            _dirPin(dirPin), _lockPin(lockPin),
-                           _pwmPin(pwmPin), _pwmTimer(pwmTimer) {
+                           _pwmPin(pwmPin) {
 
     // Initialize pins
     _brakePin.SetDirection(GPIO::Pin::OUTPUT);
