@@ -9,9 +9,9 @@
  */
 
 #include <cstdint>
-#include <msp430fr5994/gpio.h>
-#include <bsp.h>
-#include <drv10970.h>
+#include "msp430fr5994/gpio.h"
+#include "bsp.h"
+#include "drv10970.h"
 
 using namespace MSP430FR5994;
 
@@ -76,6 +76,13 @@ void DRV10970::ToggleDirection() {
 }
 
 void DRV10970::SetPWMDutyCycle(uint8_t dutyCycle) {
-    __no_operation();
-    // _pwmTimer.SetCC(dutyCycle);
+    if (dutyCycle > 100) {
+        dutyCycle = 100;
+    }
+    // don't worry about dutyCycle < 0 since this is an unsigned byte
+    if (dutyCycle == 0) {
+        PWM_TIM_DUTY_CYCLE_CC = 0;
+    } else {
+        PWM_TIM_DUTY_CYCLE_CC = (uint16_t)((dutyCycle * PWM_TIMER_PERIOD) / 100 - 1);
+    }
 }

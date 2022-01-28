@@ -119,6 +119,7 @@ class DRV10970 {
         unsigned long _lastRotTime;
         volatile int _pulseCount;
 
+
         // optional
         void (*_lockIndicatorCallback)();
 };
