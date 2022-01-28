@@ -216,8 +216,6 @@ void BSP_ClearResetCount() {
 uint64 BSP_GetMET() {
     return ((uint64)RTCCNT1) | ((uint64)RTCCNT2 << 8) | ((uint64)RTCCNT3 << 16) | ((uint64)RTCCNT4 << 24);
 }
-<<<<<<< HEAD
-=======
 
 //I2CResult BSP_I2C_BeginTransmission(I2CBus bus, uint8 addr) {
 //    return I2C_NO_ERROR;
@@ -355,4 +353,3 @@ uint64 BSP_GetMET() {
 //        default: break;
 //    }
 //}
->>>>>>> drv10970
