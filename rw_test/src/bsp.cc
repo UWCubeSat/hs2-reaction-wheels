@@ -100,7 +100,7 @@ static void I2CInit() {
 
 static void TimerInit() {
     // initialize PWM timer
-    PWM_TIM_PERIOD_CC = 1000 - 1;   // PWM frequency starts at 16 kHz (15 kHz to 100 kHz for DRV10970)
+    PWM_TIM_PERIOD_CC = PWM_TIMER_PERIOD - 1;   // PWM frequency starts at 16 kHz (15 kHz to 100 kHz for DRV10970)
     PWM_TIM_CCTL1 = OUTMOD_7;       // reset-set
     PWM_TIM_DUTY_CYCLE_CC = 0;      // duty-cycle of 0%
     PWM_TIM_CTL = TASSEL__SMCLK | MC__UP | TACLR;  // SMCLK, up mode, clear TAR
@@ -216,6 +216,8 @@ void BSP_ClearResetCount() {
 uint64 BSP_GetMET() {
     return ((uint64)RTCCNT1) | ((uint64)RTCCNT2 << 8) | ((uint64)RTCCNT3 << 16) | ((uint64)RTCCNT4 << 24);
 }
+<<<<<<< HEAD
+=======
 
 //I2CResult BSP_I2C_BeginTransmission(I2CBus bus, uint8 addr) {
 //    return I2C_NO_ERROR;
@@ -353,3 +355,4 @@ uint64 BSP_GetMET() {
 //        default: break;
 //    }
 //}
+>>>>>>> drv10970

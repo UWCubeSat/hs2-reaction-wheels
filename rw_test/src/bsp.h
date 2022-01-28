@@ -63,6 +63,7 @@
 
 // Variable duty cycle PWM signal (output)
 #define PWM_PORT_DIR        P1DIR
+#define PWM_PORT_OUT        P1OUT
 #define PWM_PORT_SEL0       P1SEL0
 #define PWM_PORT_SEL1       P1SEL1
 #define PWM_PIN             BIT0
@@ -86,6 +87,8 @@
 // Motor direction control signal (output)
 #define FR_PORT_DIR         P1DIR
 #define FR_PORT_OUT         P1OUT
+#define FR_PORT_IN          P1IN
+#define FR_PORT_REN         P1REN
 #define FR_PORT_SEL0        P1SEL0
 #define FR_PORT_SEL1        P1SEL1
 #define FR_PIN              BIT2
@@ -93,6 +96,8 @@
 // Lock indicator signal (input)
 #define RD_PORT_DIR         P3DIR
 #define RD_PORT_OUT         P3OUT
+#define RD_PORT_IN          P3IN
+#define RD_PORT_REN         P3REN
 #define RD_PORT_SEL0        P3SEL0
 #define RD_PORT_SEL1        P3SEL1
 #define RD_PORT_IES         P3IES
@@ -157,7 +162,9 @@
 #define I2C_EXT_SDA_PIN     BIT0
 #define I2C_EXT_SCL_PIN     BIT1
 
-#define I2C_BASE_CLOCK_FREQ 16000000 // 16 MHz
+#define I2C_BASE_CLOCK_FREQ 8000000 // 8 MHz
+#define TIMER_BASE_CLOCK_FREQ 8000000 // 8 MHz
+#define PWM_TIMER_PERIOD 500 // timer frequency of 16 kHz
 
 typedef enum i2c_bus {
     I2C_EXTERNAL_BUS = 0,

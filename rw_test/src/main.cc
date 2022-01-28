@@ -5,20 +5,21 @@
  *      Author: sailedeer
  */
 
-#include "main.h"
-#include "bsp.h"
-#include "pwm.h"
-
 #include <cstdint>
 
+#include "bsp.h"
+#include "msp430fr5994/gpio.h"
+#include "msp430fr5994/timer.h"
+#include "drv10970.h"
+#include "pid.h"
+
+using namespace MSP430FR5994;
+
+static const float Kp = 0;
+static const float Ki = 0;
+static const float Kd = 0;
+
+
 int main() {
-//    BSP_Init();
-//    while (1) {
-//
-//    }
-    
-    BSP_Init();
-    //PWM pwm(PWM_PIN, 1000, 900);
-    PWM_TIM_DUTY_CYCLE_CC = 500;
-    LED_PORT_OUT |= LED_PIN;
+    // Do nothing for now
 }
