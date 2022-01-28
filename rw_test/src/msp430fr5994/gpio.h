@@ -8,11 +8,24 @@
 #ifndef MSP430FR5994_GPIO_H_
 #define MSP430FR5994_GPIO_H_
 
-#include "types.h"
-
 namespace MSP430FR5994 {
 
     namespace GPIO {
+
+        template <typename size, base_addr, off>
+        struct io_reg_st {
+            typedef size * instance_ptr_t;
+            static inline instance_ptr_t instance() {
+                return
+            }
+        };
+
+        template <typename addr>
+        struct gpio_port_st {
+
+        };
+
+
 
         enum Port {
             PORT1,
@@ -78,37 +91,37 @@ namespace MSP430FR5994 {
                  */
                 ~Pin();
 
-                Direction GetDirection() const;
+                inline Direction GetDirection() const;
 
-                void SetDirection(Direction);
+                inline void SetDirection(Direction);
 
-                void SetInterruptEventSource(InterruptSource);
+                inline void SetInterruptEventSource(InterruptSource);
 
-                InterruptSource GetInterruptEventSource() const;
+                inline InterruptSource GetInterruptEventSource() const;
 
-                void EnableInterrupt();
+                inline void EnableInterrupt();
 
-                void DisableInterrupt();
+                inline void DisableInterrupt();
 
-                void Write(Value);
+                inline void Write(Value);
 
-                Value Read() const;
+                inline Value Read() const;
 
-                void ToggleOutput();
+                inline void ToggleOutput();
 
-                void SetResistor(Resistor);
+                inline void SetResistor(Resistor);
 
-                Resistor GetResistor();
+                inline Resistor GetResistor();
 
-                void SetFunctionMode(Function);
+                inline void SetFunctionMode(Function);
 
-                Function GetFunctionMode() const;
+                inline Function GetFunctionMode() const;
 
-                void AttachCallback(CallbackFuncPtr);
+                inline void AttachCallback(CallbackFuncPtr);
 
-                void DetachCallback();
+                inline void DetachCallback();
 
-                Status GetStatus() const { return (Status)_status; }
+                inline Status GetStatus() const { return (Status)_status; }
 
             private:
                 uint8_t _bitMask;

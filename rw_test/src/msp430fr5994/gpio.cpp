@@ -98,7 +98,7 @@ Pin::Pin(Port port, uint8_t pin) {
     }
 }
 
-Pin::~Pin() {
+inline Pin::~Pin() {
     // detach pins
     if (pinInUse(_portIdx, _bitMask) && (_status == Pin::ATTACHED)) {
         releasePin(_portIdx, _bitMask);
@@ -107,7 +107,7 @@ Pin::~Pin() {
     this->DetachCallback();
 }
 
-Pin::Direction Pin::GetDirection() const {
+inline Pin::Direction Pin::GetDirection() const {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     if (base->dir & this->_bitMask) {
         return Pin::OUTPUT;
@@ -116,7 +116,7 @@ Pin::Direction Pin::GetDirection() const {
     }
 }
 
-void Pin::SetDirection(Pin::Direction dir) {
+inline void Pin::SetDirection(Pin::Direction dir) {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     if (dir == Pin::OUTPUT) {
         base->dir |= this->_bitMask;
@@ -128,7 +128,7 @@ void Pin::SetDirection(Pin::Direction dir) {
     }
 }
 
-void Pin::SetInterruptEventSource(Pin::InterruptSource src) {
+inline void Pin::SetInterruptEventSource(Pin::InterruptSource src) {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     if (src == Pin::LOW_TO_HIGH_EDGE) {
         base->ies &= ~(this->_bitMask);
@@ -137,7 +137,7 @@ void Pin::SetInterruptEventSource(Pin::InterruptSource src) {
     }
 }
 
-Pin::InterruptSource Pin::GetInterruptEventSource() const {
+inline Pin::InterruptSource Pin::GetInterruptEventSource() const {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     if (base->ies & this->_bitMask) {
         return Pin::HIGH_TO_LOW_EDGE;
@@ -146,17 +146,17 @@ Pin::InterruptSource Pin::GetInterruptEventSource() const {
     }
 }
 
-void Pin::EnableInterrupt() {
+inline void Pin::EnableInterrupt() {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     base->ie |= this->_bitMask;
 }
 
-void Pin::DisableInterrupt() {
+inline void Pin::DisableInterrupt() {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     base->ie &= ~(this->_bitMask);
 }
 
-void Pin::Write(Pin::Value val) {
+inline void Pin::Write(Pin::Value val) {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     if (this->GetDirection() == Pin::OUTPUT) {
         if (val == Pin::LOW) {
@@ -167,7 +167,7 @@ void Pin::Write(Pin::Value val) {
     }
 }
 
-Pin::Value Pin::Read() const {
+inline Pin::Value Pin::Read() const {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     if (this->GetDirection() == Pin::INPUT) {
         if (base->in & this->_bitMask) {
@@ -184,14 +184,14 @@ Pin::Value Pin::Read() const {
     }
 }
 
-void Pin::ToggleOutput() {
+inline void Pin::ToggleOutput() {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     if (this->GetDirection() == Pin::OUTPUT) {
         base->out ^= this->_bitMask;
     }
 }
 
-void Pin::SetResistor(Pin::Resistor res) {
+inline void Pin::SetResistor(Pin::Resistor res) {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     if (this->GetDirection() == Pin::INPUT) {
         switch (res) {
@@ -207,7 +207,7 @@ void Pin::SetResistor(Pin::Resistor res) {
     }
 }
 
-Pin::Resistor Pin::GetResistor() {
+inline Pin::Resistor Pin::GetResistor() {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     uint8_t res = base->ren & this->_bitMask;
     uint8_t out = base->out & this->_bitMask;
@@ -223,7 +223,7 @@ Pin::Resistor Pin::GetResistor() {
     }
 }
 
-void Pin::SetFunctionMode(Pin::Function mode) {
+inline void Pin::SetFunctionMode(Pin::Function mode) {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     switch (mode) {
         case Pin::NONE:
@@ -245,7 +245,7 @@ void Pin::SetFunctionMode(Pin::Function mode) {
     }
 }
 
-Pin::Function Pin::GetFunctionMode() const {
+inline Pin::Function Pin::GetFunctionMode() const {
     gpio_port_ptr_t base = getBasePtr(this->_portIdx);
     if (!(base->sel0 & this->_bitMask) && !(base->sel1 & this->_bitMask)) {
         return Pin::NONE;
@@ -258,14 +258,14 @@ Pin::Function Pin::GetFunctionMode() const {
     }
 }
 
-void Pin::AttachCallback(Pin::CallbackFuncPtr func) {
+inline void Pin::AttachCallback(Pin::CallbackFuncPtr func) {
     if (func) {
         this->EnableInterrupt();
         (portCallbackTbl[this->_portIdx]).tbl[this->_bit] = func;
     }
 }
 
-void Pin::DetachCallback() {
+inline void Pin::DetachCallback() {
     (portCallbackTbl[this->_portIdx]).tbl[this->_bit] = INVALID_CB_ADDR;
 }
 
