@@ -8,128 +8,136 @@
 #ifndef MSP430FR5994_GPIO_H_
 #define MSP430FR5994_GPIO_H_
 
+#include "msp430fr5994.h"
+#include "msp430-hsl.h"
+
 namespace MSP430FR5994 {
 
     namespace GPIO {
 
-        template <typename size, base_addr, off>
-        struct io_reg_st {
-            typedef size * instance_ptr_t;
-            static inline instance_ptr_t instance() {
-                return
-            }
+        enum class Direction {
+            OUTPUT,
+            INPUT
         };
 
-        template <typename addr>
-        struct gpio_port_st {
-
+        enum class Resistor {
+            PULLUP,
+            PULLDOWN
         };
 
-
-
-        enum Port {
-            PORT1,
-            PORT2,
-            PORT3,
-            PORT4,
-            PORT5,
-            PORT6,
-            PORT7,
-            PORT8,
-            PORTJ
+        enum class InterruptSource {
+            RISING,
+            FALLING
         };
 
-        class Pin {
-            public:
-                enum Direction {
-                    INPUT = 0x00,
-                    OUTPUT
-                };
+        enum class Function {
+            GPIO,
+            PRIMARY,
+            SECONDARY,
+            TERTIARY
+        };
 
-                enum Value {
-                    LOW = 0x00,
-                    HIGH,
-
-                };
-
-                enum InterruptSource {
-                    LOW_TO_HIGH_EDGE,
-                    HIGH_TO_LOW_EDGE,
-                    INTERRUPT_DISABLED
-                };
-
-                enum Function {
-                    NONE,
-                    PRIMARY,
-                    SECONDARY,
-                    TERTIARY
-                };
-
-                enum Resistor {
-                    PULL_DOWN,
-                    PULL_UP,
-                    NO_RESISTOR
-                };
-
-                enum Status {
-                    UNSUPPORTED,
-                    ATTACHED,
-                    IN_USE
-                };
-
-                typedef void (*CallbackFuncPtr)();
-
-                static const uint32_t INVALID_CB_ADDR = 0;
-
-                Pin(Port, uint8_t);
-
-                // disable copy constructor
-                Pin(const Pin&) = delete;
-
-                /*
-                 * Marks underlying pin handle as free if it is in use
-                 */
-                ~Pin();
-
-                inline Direction GetDirection() const;
-
-                inline void SetDirection(Direction);
-
-                inline void SetInterruptEventSource(InterruptSource);
-
-                inline InterruptSource GetInterruptEventSource() const;
-
-                inline void EnableInterrupt();
-
-                inline void DisableInterrupt();
-
-                inline void Write(Value);
-
-                inline Value Read() const;
-
-                inline void ToggleOutput();
-
-                inline void SetResistor(Resistor);
-
-                inline Resistor GetResistor();
-
-                inline void SetFunctionMode(Function);
-
-                inline Function GetFunctionMode() const;
-
-                inline void AttachCallback(CallbackFuncPtr);
-
-                inline void DetachCallback();
-
-                inline Status GetStatus() const { return (Status)_status; }
-
+        template <uint16_t addr>
+        struct Port {
             private:
-                uint8_t _bitMask;
-                uint8_t _bit;
-                uint8_t _portIdx;
-                uint8_t _status;
+                reg_st<uint8_t, addr, 0x00> in;
+                reg_st<uint8_t, addr, 0x02> out;
+                reg_st<uint8_t, addr, 0x04> dir;
+                reg_st<uint8_t, addr, 0x06> ren;
+                reg_st<uint8_t, addr, 0x0A> sel0;
+                reg_st<uint8_t, addr, 0x0C> sel1;
+                reg_st<uint8_t, addr, 0x16> selc;
+                reg_st<uint8_t, addr, 0x18> ies;
+                reg_st<uint8_t, addr, 0x1A> ie;
+                reg_st<uint8_t, addr, 0x1C> ifg;
 
-        };  // class Pin
+            public:
+                inline void setMode(Direction dir, uint8_t pinMask);
+                inline void setFunction(Function func, uint8_t pinMask);
+                inline void setResistor(Resistor res, uint8_t pinMask);
+        };
+
+        template <uint16_t addr>
+        inline void Port<addr>::setMode(Direction mode, uint8_t pinMask) {
+            switch (mode) {
+                case Direction::OUTPUT: {
+                    dir |= pinMask;
+                    break;
+                }
+                case Direction::INPUT: {
+                    dir &= ~(pinMask);
+                    ren &= ~(pinMask);
+                    break;
+                }
+            }
+        }
+
+        template <uint16_t addr>
+        inline void Port<addr>::setFunction(Function func, uint8_t pinMask) {
+            switch (func) {
+                case Function::GPIO: {
+                    sel0 &= ~(pinMask);
+                    sel1 &= ~(pinMask);
+                    break;
+                }
+                case Function::PRIMARY: {
+                    sel0 |= pinMask;
+                    sel1 &= ~(pinMask);
+                    break;
+                }
+                case Function::SECONDARY: {
+                    sel0 &= ~(pinMask);
+                    sel1 |= pinMask;
+                    break;
+                }
+                case Function::TERTIARY: {
+                    sel0 |= pinMask;
+                    sel1 |= pinMask;
+                    break;
+                }
+            }
+        }
+
+        template <uint16_t addr>
+        inline void Port<addr>::setResistor(Resistor res, uint8_t pinMask) {
+            switch (res) {
+                case Resistor::PULLUP: {
+                    break;
+                }
+                case Resistor::PULLDOWN: {
+                    break;
+                }
+            }
+        }
+
+        template <uint16_t addr, uint8_t pinMask>
+        struct Pin {
+            bit_st<uint8_t, addr, pinMask> in;
+            bit_st<uint8_t, addr, pinMask> out;
+            bit_st<uint8_t, addr, pinMask> dir;
+            bit_st<uint8_t, addr, pinMask> ren;
+            bit_st<uint8_t, addr, pinMask> sel0;
+            bit_st<uint8_t, addr, pinMask> sel1;
+            bit_st<uint8_t, addr, pinMask> selc;
+            bit_st<uint8_t, addr, pinMask> ies;
+            bit_st<uint8_t, addr, pinMask> ie;
+            bit_st<uint8_t, addr, pinMask> ifg;
+        };
+
+        template<uint16_t addr, uint8_t pinMask>
+        using PinHandle = Pin<addr, pinMask> &;
+
+        template<uint16_t addr>
+        using PortHandle = Port<addr> &;
+
+        extern Port<P1_BASE>        p1;
+        extern Port<P2_BASE + 0x1>  p2;
+        extern Port<P3_BASE>        p3;
+        extern Port<P4_BASE + 0x1>  p4;
+        extern Port<P5_BASE>        p5;
+        extern Port<P6_BASE + 0x1>  p6;
+        extern Port<P7_BASE>        p7;
+        extern Port<P8_BASE + 0x1>  p8;
     }   // namespace GPIO
 }   // namespace MSP430
 
