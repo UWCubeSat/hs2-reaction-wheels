@@ -81,6 +81,8 @@
 #define FG_PORT_IES         P1IES
 #define FG_PORT_IE          P1IE
 #define FG_PIN              BIT1
+#define FG_PORT_REN         P1REN
+#define FG_PORT_VECTOR      PORT1_VECTOR
 
 // Motor direction control signal (output)
 #define FR_PORT_DIR         P1DIR
@@ -101,6 +103,8 @@
 #define RD_PORT_IES         P3IES
 #define RD_PORT_IE          P3IE
 #define RD_PIN              BIT1
+#define RD_PORT_IN          P3IN
+#define RD_PORT_REN         P3REN
 
 
 /*
@@ -158,7 +162,20 @@
 #define I2C_EXT_SDA_PIN     BIT0
 #define I2C_EXT_SCL_PIN     BIT1
 
-#define I2C_BASE_CLOCK_FREQ 16000000 // 16 MHz
+#define I2C_BASE_CLOCK_FREQ 8000000 // 8 MHz
+#define TIMER_BASE_CLOCK_FREQ 8000000 // 8 MHz
+#define PWM_TIMER_PERIOD 500 // timer frequency of 16 kHz
+
+typedef enum i2c_bus {
+    I2C_EXTERNAL_BUS = 0,
+    I2C_INTERNAL_BUS
+} I2CBus;
+
+typedef enum i2c_result {
+    I2C_NO_ERROR = 0,
+    I2C_BUS_BUSY = 1,
+
+}I2CResult;
 
 #define OWN_ADDRESS         0x48
 
@@ -196,5 +213,40 @@ uint16 BSP_GetResetReason();
 
 // returns time since last reset in milliseconds
 uint64 BSP_GetMET();
+
+// reads register from device on I2C bus
+uint8 BSP_I2C_Transmit(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_bytes);
+
+// writes to device register on I2C bus
+uint8 BSP_I2C_Receive(I2CBus bus, uint8 addr, uint8 * r_buf, uint8 r_bytes);
+
+// reads and writes to device on bus at addr
+uint8 BSP_I2C_TransmitAndReceive(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_bytes, uint8 * r_buf, uint8 r_bytes);
+
+// wait for STOP condition to be sent
+static void BSP_I2C_WaitForStopComplete(I2CBus bus);
+
+// wait for START condition to be sent
+static void BSP_I2C_WaitForStartComplete(I2CBus bus);
+
+// send start condition for transmit
+static void BSP_I2C_TransmitStart(I2CBus bus);
+
+// send stop condition for transmit
+static void BSP_I2C_TransmitStop(I2CBus bus);
+
+// send start condition for receive
+static void BSP_I2C_ReceiveStart(I2CBus bus);
+
+// send stop condition for receive
+static void BSP_I2C_ReceiveStop(I2CBus bus);
+
+static void BSP_I2C_SetAutoStopByteCount(I2CBus bus);
+
+static void BSP_I2C_Enable(I2CBus bus);
+
+static void BSP_I2C_Disable(I2CBus bus);
+
+static uint8 BSP_I2C_BusBusy(I2CBus bus);
 
 #endif /* BSP_H_ */
