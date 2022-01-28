@@ -157,7 +157,9 @@
 #define I2C_EXT_SDA_PIN     BIT0
 #define I2C_EXT_SCL_PIN     BIT1
 
-#define I2C_BASE_CLOCK_FREQ 16000000 // 16 MHz
+#define I2C_BASE_CLOCK_FREQ 8000000 // 8 MHz
+#define TIMER_BASE_CLOCK_FREQ 8000000 // 8 MHz
+#define PWM_TIMER_PERIOD 500 // timer frequency of 16 kHz
 
 typedef enum i2c_bus {
     I2C_EXTERNAL_BUS = 0,
