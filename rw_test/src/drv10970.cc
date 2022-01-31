@@ -41,7 +41,7 @@ DRV10970::DRV10970(GPIO::Pin &brakePin, GPIO::Pin &rpmPin, GPIO::Pin &dirPin,
     _pwmPin.SetFunction(GPIO::Function::PRIMARY);
 
     // Initialize DRV10970 output values
-    _pwmTimer.ccr0.set(PWM_TIMER_PERIOD - 1);
+    _pwmTimer.ccr0.set(BSP::PWM_TIMER_PERIOD - 1);
     SetPWMDutyCycle(0);
     DisableBrake();
     SetDirectionForward();
@@ -89,6 +89,6 @@ void DRV10970::SetPWMDutyCycle(uint8_t dutyCycle) {
     if (dutyCycle == 0) {
         _pwmTimer.ccr1.set(0);
     } else {
-        _pwmTimer.ccr1.set((uint16_t)((dutyCycle * PWM_TIMER_PERIOD) / 100 - 1));
+        _pwmTimer.ccr1.set((uint16_t)((dutyCycle * BSP::PWM_TIMER_PERIOD) / 100 - 1));
     }
 }
