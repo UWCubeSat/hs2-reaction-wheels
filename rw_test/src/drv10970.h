@@ -76,9 +76,6 @@ class DRV10970 {
         // toggle brake
         void ToggleBrake();
 
-        // get brake status
-        inline uint16_t GetBrake() { return BRKMOD_PORT_OUT & BRKMOD_PIN; }
-
         // sets motor to forward
         void SetDirectionForward();
 
@@ -88,17 +85,11 @@ class DRV10970 {
         // toggle's motor direction
         void ToggleDirection();
 
-        // get current motor direction
-        uint8_t GetDirection() { return FR_PORT_OUT & FR_PIN; }
-
-        // get the current lock status
-        uint8_t GetLockStatus() { return ~(RD_PORT_IN & RD_PIN); }
-
         // get how many times a lock event has occurred
         inline uint8_t GetLockEventCount() { return _lock_events; }
 
         // update PWM frequency
-        inline void SetPWMFrequency(uint16_t frequency);
+        void SetPWMFrequency(uint16_t frequency);
 
         // update PWM duty cycle
         void SetPWMDutyCycle(uint8_t duty_cycle);
