@@ -12,13 +12,13 @@
 
 namespace MSP430FR5994 {
 
-    template <typename width, uint16_t addr, uint8_t bitMask>
-    struct bit_st {
+    template <typename width, uint16_t addr, uint16_t bitMask>
+    struct RegisterBit {
         public:
             inline void set();
             inline void clear();
             inline void toggle();
-            inline width get();
+            inline bool get();
 
         private:
             typedef volatile width & instance_ref_t;
@@ -28,13 +28,35 @@ namespace MSP430FR5994 {
             }
     };
 
+    template <typename width, uint16_t addr, uint16_t bitMask>
+    inline void RegisterBit<width, addr, bitMask>::set() {
+        instance() |= bitMask;
+    }
+
+    template <typename width, uint16_t addr, uint16_t bitMask>
+    inline void RegisterBit<width, addr, bitMask>::clear() {
+        instance() &= ~(bitMask);
+    }
+
+    template <typename width, uint16_t addr, uint16_t bitMask>
+    inline void RegisterBit<width, addr, bitMask>::toggle() {
+        instance() ^= bitMask;
+    }
+
+    template <typename width, uint16_t addr, uint16_t bitMask>
+    inline bool RegisterBit<width, addr, bitMask>::get() {
+        return ((instance() & bitMask) != 0);
+    }
+
     template <typename width, uint16_t base_addr, uint8_t off>
-    struct reg_st {
+    struct Register {
         public:
             inline void setBit(width bitMask);
             inline void clearBit(width bitMask);
             inline width getBit(width bitMask);
             inline void toggleBit(width bitMask);
+            inline void set(width next) { instance() = next; }
+            inline width get() { return instance(); }
 
             inline void operator |=(width mask) {
                 instance() |= mask;
@@ -54,24 +76,24 @@ namespace MSP430FR5994 {
     };
 
     template <typename width, uint16_t base_addr, uint8_t off>
-    inline void reg_st<width, base_addr, off>::setBit(width bitMask) {
+    inline void Register<width, base_addr, off>::setBit(width bitMask) {
         instance() |= bitMask;
     }
 
     template <typename width, uint16_t base_addr, uint8_t off>
-    inline void reg_st<width, base_addr, off>::clearBit(width bitMask) {
+    inline void Register<width, base_addr, off>::clearBit(width bitMask) {
         instance() &= ~(bitMask);
     }
 
 
     template <typename width, uint16_t base_addr, uint8_t off>
-    inline width reg_st<width, base_addr, off>::getBit(width bitMask) {
+    inline width Register<width, base_addr, off>::getBit(width bitMask) {
         return (width)(instance() &= bitMask);
     }
 
 
     template <typename width, uint16_t base_addr, uint8_t off>
-    inline void reg_st<width, base_addr, off>::toggleBit(width bitMask) {
+    inline void Register<width, base_addr, off>::toggleBit(width bitMask) {
         instance() ^= bitMask;
     }
 
