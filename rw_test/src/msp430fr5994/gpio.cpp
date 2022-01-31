@@ -6,6 +6,7 @@
  */
 
 #include <cstdint>
+#include <msp430.h>
 
 #include "gpio.h"
 
@@ -57,6 +58,7 @@ void __attribute__ ((interrupt(PORT1_VECTOR))) port1_isr() {
         case P1IV__P1IFG7:  safeCall(portCallbackTbl[0].tbl[7]); break;          // Vector  16:  P1.7 interrupt flag
         default: break;
     }
+    __bic_SR_register_on_exit(LPM0_bits);
 }
 
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
@@ -80,6 +82,7 @@ void __attribute__ ((interrupt(PORT2_VECTOR))) port2_isr() {
         case P2IV__P2IFG7:  safeCall(portCallbackTbl[1].tbl[7]); break;          // Vector  16:  P1.7 interrupt flag
         default: break;
     }
+    __bic_SR_register_on_exit(LPM0_bits);
 }
 
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
@@ -103,6 +106,7 @@ void __attribute__ ((interrupt(PORT3_VECTOR))) port3_isr() {
         case P3IV__P3IFG7:  safeCall(portCallbackTbl[2].tbl[7]); break;          // Vector  16:  P1.7 interrupt flag
         default: break;
     }
+    __bic_SR_register_on_exit(LPM0_bits);
 }
 
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
@@ -126,6 +130,7 @@ void __attribute__ ((interrupt(PORT4_VECTOR))) port4_isr() {
         case P4IV__P4IFG7:  safeCall(portCallbackTbl[3].tbl[7]); break;          // Vector  16:  P1.7 interrupt flag
         default: break;
     }
+    __bic_SR_register_on_exit(LPM0_bits);
 }
 
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
@@ -149,6 +154,7 @@ void __attribute__ ((interrupt(PORT5_VECTOR))) port5_isr() {
         case P5IV__P5IFG7:  safeCall(portCallbackTbl[4].tbl[7]); break;          // Vector  16:  P1.7 interrupt flag
         default: break;
     }
+    __bic_SR_register_on_exit(LPM0_bits);
 }
 
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
@@ -172,6 +178,7 @@ void __attribute__ ((interrupt(PORT6_VECTOR))) port6_isr() {
         case P6IV__P6IFG7:  safeCall(portCallbackTbl[5].tbl[7]); break;          // Vector  16:  P1.7 interrupt flag
         default: break;
     }
+    __bic_SR_register_on_exit(LPM0_bits);
 }
 
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
@@ -195,6 +202,7 @@ void __attribute__ ((interrupt(PORT7_VECTOR))) port7_isr() {
         case P7IV__P7IFG7:  safeCall(portCallbackTbl[6].tbl[7]); break;          // Vector  16:  P1.7 interrupt flag
         default: break;
     }
+    __bic_SR_register_on_exit(LPM0_bits);
 }
 
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
@@ -218,6 +226,7 @@ void __attribute__ ((interrupt(PORT8_VECTOR))) port8_isr() {
         case P8IV__P8IFG7:  safeCall(portCallbackTbl[7].tbl[7]); break;          // Vector  16:  P1.7 interrupt flag
         default: break;
     }
+    __bic_SR_register_on_exit(LPM0_bits);
 }
 #else
 inline void AttachCallback(uint8_t pin, uint8_t port, CallbackFuncPtr func) {
