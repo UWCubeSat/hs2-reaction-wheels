@@ -39,26 +39,25 @@ namespace MSP430FR5994 {
 
         template <uint16_t addr>
         struct Port {
-            private:
-                reg_st<uint8_t, addr, 0x00> in;
-                reg_st<uint8_t, addr, 0x02> out;
-                reg_st<uint8_t, addr, 0x04> dir;
-                reg_st<uint8_t, addr, 0x06> ren;
-                reg_st<uint8_t, addr, 0x0A> sel0;
-                reg_st<uint8_t, addr, 0x0C> sel1;
-                reg_st<uint8_t, addr, 0x16> selc;
-                reg_st<uint8_t, addr, 0x18> ies;
-                reg_st<uint8_t, addr, 0x1A> ie;
-                reg_st<uint8_t, addr, 0x1C> ifg;
-
-            public:
-                inline void setMode(Direction dir, uint8_t pinMask);
-                inline void setFunction(Function func, uint8_t pinMask);
-                inline void setResistor(Resistor res, uint8_t pinMask);
+            Register<uint8_t, addr, 0x00> in;
+            Register<uint8_t, addr, 0x02> out;
+            Register<uint8_t, addr, 0x04> dir;
+            Register<uint8_t, addr, 0x06> ren;
+            Register<uint8_t, addr, 0x0A> sel0;
+            Register<uint8_t, addr, 0x0C> sel1;
+            Register<uint8_t, addr, 0x16> selc;
+            Register<uint8_t, addr, 0x18> ies;
+            Register<uint8_t, addr, 0x1A> ie;
+            Register<uint8_t, addr, 0x1C> ifg;
+            inline void SetMode(Direction dir, uint8_t pinMask);
+            inline void SetFunction(Function func, uint8_t pinMask);
+            inline void SetResistor(Resistor res, uint8_t pinMask);
+            inline void EnableInterrupt(uint8_t pinMask, InterruptSource src);
+            inline void DisableInterrupt(uint8_t pinMask);
         };
 
         template <uint16_t addr>
-        inline void Port<addr>::setMode(Direction mode, uint8_t pinMask) {
+        inline void Port<addr>::SetMode(Direction mode, uint8_t pinMask) {
             switch (mode) {
                 case Direction::OUTPUT: {
                     dir |= pinMask;
@@ -73,7 +72,7 @@ namespace MSP430FR5994 {
         }
 
         template <uint16_t addr>
-        inline void Port<addr>::setFunction(Function func, uint8_t pinMask) {
+        inline void Port<addr>::SetFunction(Function func, uint8_t pinMask) {
             switch (func) {
                 case Function::GPIO: {
                     sel0 &= ~(pinMask);
@@ -99,7 +98,7 @@ namespace MSP430FR5994 {
         }
 
         template <uint16_t addr>
-        inline void Port<addr>::setResistor(Resistor res, uint8_t pinMask) {
+        inline void Port<addr>::SetResistor(Resistor res, uint8_t pinMask) {
             switch (res) {
                 case Resistor::PULLUP: {
                     break;
@@ -110,18 +109,34 @@ namespace MSP430FR5994 {
             }
         }
 
-        template <uint16_t addr, uint8_t pinMask>
+        template <uint16_t addr>
+        inline void Port<addr>::EnableInterrupt(uint8_t pinMask, InterruptSource src) {
+            ie |= pinMask;
+            if (src == InterruptSource::FALLING) {
+                ies |= pinMask;
+            } else {
+                ies &= ~(pinMask);
+            }
+        }
+
+        template <uint16_t addr>
+        inline void Port<addr>::DisableInterrupt(uint8_t pinMask) {
+            ie &= ~(pinMask);
+        }
+
+
+        template <uint16_t port_addr, uint16_t pinMask>
         struct Pin {
-            bit_st<uint8_t, addr, pinMask> in;
-            bit_st<uint8_t, addr, pinMask> out;
-            bit_st<uint8_t, addr, pinMask> dir;
-            bit_st<uint8_t, addr, pinMask> ren;
-            bit_st<uint8_t, addr, pinMask> sel0;
-            bit_st<uint8_t, addr, pinMask> sel1;
-            bit_st<uint8_t, addr, pinMask> selc;
-            bit_st<uint8_t, addr, pinMask> ies;
-            bit_st<uint8_t, addr, pinMask> ie;
-            bit_st<uint8_t, addr, pinMask> ifg;
+            RegisterBit<uint8_t, port_addr, pinMask> in;
+            RegisterBit<uint8_t, port_addr, pinMask> out;
+            RegisterBit<uint8_t, port_addr, pinMask> dir;
+            RegisterBit<uint8_t, port_addr, pinMask> ren;
+            RegisterBit<uint8_t, port_addr, pinMask> sel0;
+            RegisterBit<uint8_t, port_addr, pinMask> sel1;
+            RegisterBit<uint8_t, port_addr, pinMask> selc;
+            RegisterBit<uint8_t, port_addr, pinMask> ies;
+            RegisterBit<uint8_t, port_addr, pinMask> ie;
+            RegisterBit<uint8_t, port_addr, pinMask> ifg;
         };
 
         template<uint16_t addr, uint8_t pinMask>
