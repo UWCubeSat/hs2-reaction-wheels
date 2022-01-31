@@ -8,9 +8,13 @@
 #ifndef DRV10970_H_
 #define DRV10970_H_
 
-#include "bsp.h"
-
 #include <cstdint>
+#include <msp430.h>
+#include "bsp.h"
+#include "msp430fr5994/gpio.h"
+#include "msp430fr5994/gpio/pin.h"
+#include "msp430fr5994/gpio/port.h"
+#include "msp430fr5994/timer.h"
 
 using namespace MSP430FR5994;
 
@@ -48,12 +52,14 @@ using namespace MSP430FR5994;
 class DRV10970 {
     public:
 
-        enum Direction {
+        enum class Direction {
             FORWARD = 0,
             BACKWARD = 1,
         };
+
         // Constructor
-        DRV10970(GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, GPIO::Pin&);
+        DRV10970(GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, Timer::Timer_3&,
+                 GPIO::CallbackFuncPtr, GPIO::CallbackFuncPtr);
 
         // Delete copy constructor
         DRV10970(const DRV10970 &) = delete;
@@ -62,31 +68,31 @@ class DRV10970 {
         ~DRV10970();
 
         // turns on brake
-        inline void EnableBrake();
+        void EnableBrake();
 
         // turns off brake
-        inline void DisableBrake();
+        void DisableBrake();
 
         // toggle brake
-        inline void ToggleBrake();
+        void ToggleBrake();
 
         // get brake status
         inline uint16_t GetBrake() { return BRKMOD_PORT_OUT & BRKMOD_PIN; }
 
         // sets motor to forward
-        inline void SetDirectionForward();
+        void SetDirectionForward();
 
         // sets motor to backward
-        inline void SetDirectionBackward();
+        void SetDirectionBackward();
 
         // toggle's motor direction
-        inline void ToggleDirection();
+        void ToggleDirection();
 
         // get current motor direction
-        inline uint8_t GetDirection() { return FR_PORT_OUT & FR_PIN; }
+        uint8_t GetDirection() { return FR_PORT_OUT & FR_PIN; }
 
         // get the current lock status
-        inline uint8_t GetLockStatus() { return ~(RD_PORT_IN & RD_PIN); }
+        uint8_t GetLockStatus() { return ~(RD_PORT_IN & RD_PIN); }
 
         // get how many times a lock event has occurred
         inline uint8_t GetLockEventCount() { return _lock_events; }
@@ -95,7 +101,7 @@ class DRV10970 {
         inline void SetPWMFrequency(uint16_t frequency);
 
         // update PWM duty cycle
-        inline void SetPWMDutyCycle(uint8_t duty_cycle);
+        void SetPWMDutyCycle(uint8_t duty_cycle);
 
         // get the RPM of the motor
         inline float GetRPM() { return _rpm; }
@@ -110,18 +116,17 @@ class DRV10970 {
         uint32_t _error_count;
 
         GPIO::Pin &_brakePin;
-        GPIO::Pin &_dirPin;
         GPIO::Pin &_rpmPin;
+        GPIO::Pin &_dirPin;
         GPIO::Pin &_lockPin;
         GPIO::Pin &_pwmPin;
+        Timer::Timer_3 &_pwmTimer;
 
         float _rpm;
         unsigned long _lastRotTime;
         volatile int _pulseCount;
 
 
-        // optional
-        void (*_lockIndicatorCallback)();
 };
 
 #endif /* DRV10970_H_ */

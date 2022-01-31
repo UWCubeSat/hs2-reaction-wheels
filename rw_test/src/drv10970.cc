@@ -5,70 +5,76 @@
  *      Author: sailedeer
  *
  *      This file contains a driver for DRV10970 Motor Driver IC. It exposes an interface
- *      which can be used to completely control a compatible motor.
+ *      which can be used to completely control a compatible BLDC motor.
  */
 
 #include <cstdint>
-#include "msp430fr5994/gpio.h"
+#include <msp430.h>
 #include "bsp.h"
+#include "msp430fr5994/gpio.h"
+#include "msp430fr5994/gpio/pin.h"
+#include "msp430fr5994/gpio/port.h"
+#include "msp430fr5994/timer.h"
 #include "drv10970.h"
 
 using namespace MSP430FR5994;
 
-DRV10970::DRV10970(GPIO::Pin &brakePin, GPIO::Pin &rpmPin,
-                   GPIO::Pin &dirPin, GPIO::Pin &lockPin,
-                   GPIO::Pin &pwmPin) :
-                           _brakePin(brakePin), _rpmPin(rpmPin),
-                           _dirPin(dirPin), _lockPin(lockPin),
-                           _pwmPin(pwmPin) {
+DRV10970::DRV10970(GPIO::Pin &brakePin, GPIO::Pin &rpmPin, GPIO::Pin &dirPin,
+                   GPIO::Pin &lockPin, GPIO::Pin &pwmPin, Timer::Timer_3 &pwmTimer,
+                   GPIO::CallbackFuncPtr lockCallback, GPIO::CallbackFuncPtr rpmCallback)
+: _brakePin(brakePin), _rpmPin(rpmPin), _dirPin(dirPin), _lockPin(lockPin),
+  _pwmPin(pwmPin), _pwmTimer(pwmTimer) {
 
     // Initialize pins
-    _brakePin.SetDirection(GPIO::Pin::OUTPUT);
+    _brakePin.SetMode(GPIO::Direction::OUTPUT);
 
-    _rpmPin.SetDirection(GPIO::Pin::INPUT);
-    _rpmPin.SetInterruptEventSource(GPIO::Pin::LOW_TO_HIGH_EDGE);
-    _rpmPin.EnableInterrupt();
+    _rpmPin.SetMode(GPIO::Direction::INPUT);
+    _rpmPin.EnableInterrupt(GPIO::InterruptSource::RISING, rpmCallback);
 
-    _dirPin.SetDirection(GPIO::Pin::OUTPUT);
+    _dirPin.SetMode(GPIO::Direction::OUTPUT);
 
-    _lockPin.SetDirection(GPIO::Pin::INPUT);
-    _lockPin.SetInterruptEventSource(GPIO::Pin::LOW_TO_HIGH_EDGE);
-    _lockPin.EnableInterrupt();
+    _lockPin.SetMode(GPIO::Direction::INPUT);
+    _lockPin.EnableInterrupt(GPIO::InterruptSource::RISING, lockCallback);
+
+    _pwmPin.SetMode(GPIO::Direction::OUTPUT);
+    // sets the pin as an output for the capture/compare registers
+    _pwmPin.SetFunction(GPIO::Function::PRIMARY);
 
     // Initialize DRV10970 output values
-    // TODO: PWM stuff
+    _pwmTimer.ccr0.set(PWM_TIMER_PERIOD - 1);
+    SetPWMDutyCycle(0);
     DisableBrake();
     SetDirectionForward();
 }
 
 void DRV10970::EnableBrake() {
 //    BRKMOD_PORT_OUT |= BRKMOD_PIN;
-    _brakePin.Write(GPIO::Pin::HIGH);
+    _brakePin.out.set();
 }
 
 void DRV10970::DisableBrake() {
 //    BRKMOD_PORT_OUT &= ~BRKMOD_PIN;
-    _brakePin.Write(GPIO::Pin::LOW);
+    _brakePin.out.clear();
 }
 
 void DRV10970::ToggleBrake() {
 //    BRKMOD_PORT_OUT ^= BRKMOD_PIN;
-    _brakePin.ToggleOutput();
+    _brakePin.out.toggle();
 }
 
 void DRV10970::SetDirectionForward() {
 //    FR_PORT_OUT &= ~FR_PIN;
-    _dirPin.Write(GPIO::Pin::LOW);
+    _dirPin.out.clear();
 }
 
 void DRV10970::SetDirectionBackward() {
 //    FR_PORT_OUT |= FR_PIN;
-    _dirPin.Write(GPIO::Pin::HIGH);
+    _dirPin.out.set();
 }
 
 void DRV10970::ToggleDirection() {
 //    FR_PORT_OUT ^= FR_PIN;
-    if (_dir == FORWARD) {
+    if (_dir == Direction::FORWARD) {
         DRV10970::SetDirectionBackward();
     } else {
         DRV10970::SetDirectionForward();
@@ -81,8 +87,8 @@ void DRV10970::SetPWMDutyCycle(uint8_t dutyCycle) {
     }
     // don't worry about dutyCycle < 0 since this is an unsigned byte
     if (dutyCycle == 0) {
-        PWM_TIM_DUTY_CYCLE_CC = 0;
+        _pwmTimer.ccr1.set(0);
     } else {
-        PWM_TIM_DUTY_CYCLE_CC = (uint16_t)((dutyCycle * PWM_TIMER_PERIOD) / 100 - 1);
+        _pwmTimer.ccr1.set((uint16_t)((dutyCycle * PWM_TIMER_PERIOD) / 100 - 1));
     }
 }
