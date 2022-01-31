@@ -8,245 +8,140 @@
 #ifndef BSP_H_
 #define BSP_H_
 
-#include "types.h"
 
 #include <cstdint>
 #include <msp430.h>
 
-/*
-** Convenience defines
-*/
+#include "msp430fr5994/gpio/pin.h"
+#include "msp430fr5994/timer.h"
 
-/*
-** General board pins
-*/
-
-// GPIO 1 (inout)
-#define GPIO1_PORT_DIR      P1DIR
-#define GPIO1_PORT_OUT      P1OUT
-#define GPIO1_PORT_SEL0     P1SEL0
-#define GPIO1_PORT_SEL1     P1SEL1
-#define GPIO1_PIN      BIT6
-
-// GPIO 2 (inout)
-#define GPIO2_PORT_DIR      P3DIR
-#define GPIO2_PORT_OUT      P3OUT
-#define GPIO2_PORT_SEL0     P3SEL0
-#define GPIO2_PORT_SEL1     P3SEL1
-#define GPIO2_PIN      BIT7
-
-// GPIO 3 (inout)
-#define GPIO3_PORT_DIR      P3DIR
-#define GPIO3_PORT_OUT      P3OUT
-#define GPIO3_PORT_SEL0     P3SEL0
-#define GPIO3_PORT_SEL1     P3SEL1
-#define GPIO3_PIN      BIT6
-
-// GPIO 4 (inout)
-#define GPIO4_PORT_DIR      P3DIR
-#define GPIO4_PORT_OUT      P3OUT
-#define GPIO4_PORT_SEL0     P3SEL0
-#define GPIO4_PORT_SEL1     P3SEL1
-#define GPIO4_PIN      BIT5
-
-// General LED (output)
-#define LED_PORT_DIR        P1DIR
-#define LED_PORT_OUT        P1OUT
-#define LED_PORT_SEL0       P1SEL0
-#define LED_PORT_SEL1       P1SEL1
-#define LED_PIN        BIT7
-
-
-/*
-** DRV10970 Pin Definitions
-*/
-
-// Variable duty cycle PWM signal (output)
-#define PWM_PORT_DIR        P1DIR
-#define PWM_PORT_OUT        P1OUT
-#define PWM_PORT_SEL0       P1SEL0
-#define PWM_PORT_SEL1       P1SEL1
-#define PWM_PIN             BIT0
-
-// Brake Mode Setting signal (output)
-#define BRKMOD_PORT_DIR     P3DIR
-#define BRKMOD_PORT_OUT     P3OUT
-#define BRKMOD_PIN          BIT0
-
-// Frequency Indicator signal (input)
-#define FG_PORT_DIR         P1DIR
-#define FG_PORT_OUT         P1OUT
-#define FG_PORT_SEL0        P1SEL0
-#define FG_PORT_SEL1        P1SEL1
-#define FG_PORT_IES         P1IES
-#define FG_PORT_IE          P1IE
-#define FG_PIN              BIT1
-#define FG_PORT_REN         P1REN
-#define FG_PORT_VECTOR      PORT1_VECTOR
-
-// Motor direction control signal (output)
-#define FR_PORT_DIR         P1DIR
-#define FR_PORT_OUT         P1OUT
-#define FR_PORT_IN          P1IN
-#define FR_PORT_REN         P1REN
-#define FR_PORT_SEL0        P1SEL0
-#define FR_PORT_SEL1        P1SEL1
-#define FR_PIN              BIT2
-
-// Lock indicator signal (input)
-#define RD_PORT_DIR         P3DIR
-#define RD_PORT_OUT         P3OUT
-#define RD_PORT_IN          P3IN
-#define RD_PORT_REN         P3REN
-#define RD_PORT_SEL0        P3SEL0
-#define RD_PORT_SEL1        P3SEL1
-#define RD_PORT_IES         P3IES
-#define RD_PORT_IE          P3IE
-#define RD_PIN              BIT1
-#define RD_PORT_IN          P3IN
-#define RD_PORT_REN         P3REN
-
-
-/*
-**  BNO055 Pin Definitions
-*/
-
-// Interrupt signal (input)
-#define INT_PORT_DIR        P2DIR
-#define INT_PORT_OUT        P2OUT
-#define INT_PORT_SEL0       P2SEL0
-#define INT_PORT_SEL1       P2SEL1
-#define INT_PORT_IES        P2IES
-#define INT_PORT_IE         P2IE
-#define INT_PIN             BIT2
-
-// Reset signal (output)
-#define RST_PORT_DIR        P2DIR
-#define RST_PORT_OUT        P2OUT
-#define RST_PORT_SEL0       P2SEL0
-#define RST_PORT_SEL1       P2SEL1
-#define RST_PIN             BIT2
-
-
-/*
-** PWM Register Definitions
-*/
-
-// Timer definitions
-#define PWM_TIM_PERIOD_CC       TA0CCR0
-#define PWM_TIM_DUTY_CYCLE_CC   TA0CCR1
-#define PWM_TIM_CCTL1           TA0CCTL1
-#define PWM_TIM_CTL             TA0CTL
-
-
-/*
-** RPM Counter Definitions
-*/
-
-// Timer definitions
-#define RPM_TIM_PERIOD_CC       TA1CCR0
-
-/*
-** I2C Definitions
-*/
-
-#define I2C_INT_DIR         P7DIR
-#define I2C_INT_SEL0        P7SEL0
-#define I2C_INT_SEL1        P7SEL1
-#define I2C_INT_SDA_PIN     BIT0
-#define I2C_INT_SCL_PIN     BIT1
-
-#define I2C_EXT_DIR         P5DIR
-#define I2C_EXT_SEL0        P5SEL0
-#define I2C_EXT_SEL1        P5SEL1
-#define I2C_EXT_SDA_PIN     BIT0
-#define I2C_EXT_SCL_PIN     BIT1
-
-#define I2C_BASE_CLOCK_FREQ 8000000 // 8 MHz
-#define TIMER_BASE_CLOCK_FREQ 8000000 // 8 MHz
-#define PWM_TIMER_PERIOD 500 // timer frequency of 16 kHz
-
-typedef enum i2c_bus {
-    I2C_EXTERNAL_BUS = 0,
-    I2C_INTERNAL_BUS
-} I2CBus;
-
-typedef enum i2c_result {
-    I2C_NO_ERROR = 0,
-    I2C_BUS_BUSY = 1,
-
-}I2CResult;
-
-#define OWN_ADDRESS         0x48
-
-/*
-** External Crystal Pin Definitions
-*/
-
-#define LFXT_SEL0           PJSEL0
-#define LFXT_SEL1           PJSEL1
-#define LFXT_BIT            BIT4
-
-#define HFXT_SEL0           PJSEL0
-#define HFXT_SEL1           PJSEL1
-#define HFXT_BIT            BIT6
-
+using namespace MSP430FR5994;
 
 /*
 ** Board Support Package Interface
 */
 
-// initializes board peripherals: I2C Bus, Timers, Clocks
-void BSP_Init();
+namespace BSP {
+    void Init();
+    void Reset();
+    uint32_t GetResetCount();
+    void ClearResetCount();
+    uint16_t GetResetReason();
+    uint64_t MET();
 
-// Resets the board and all peripherals
-void BSP_Reset();
+    /*
+    ** Convenience defines
+    */
 
-// returns the number of times the board has been reset since power-on
-uint32 BSP_GetResetCount();
+    /*
+    ** General board pins
+    */
 
-// clears reset count
-void BSP_ClearResetCount();
+    // GPIO 1 (inout)
+    static const uint16_t GPIO_1_BASE   = P1_BASE;
+    static const uint8_t GPIO_1_PIN     = BIT6;
 
-// returns reason for last reset
-uint16 BSP_GetResetReason();
+    // GPIO 2 (inout)
+    static const uint16_t GPIO_2_BASE   = P3_BASE;
+    static const uint8_t GPIO_2_PIN     = BIT7;
 
-// returns time since last reset in milliseconds
-uint64 BSP_GetMET();
+    // GPIO 3 (inout)
+    static const uint16_t GPIO_3_BASE   = P3_BASE;
+    static const uint8_t GPIO_3_PIN     = BIT6;
 
-// reads register from device on I2C bus
-uint8 BSP_I2C_Transmit(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_bytes);
+    // GPIO 4 (inout)
+    static const uint16_t GPIO_4_BASE   = P3_BASE;
+    static const uint8_t GPIO_4_PIN     =  BIT5;
 
-// writes to device register on I2C bus
-uint8 BSP_I2C_Receive(I2CBus bus, uint8 addr, uint8 * r_buf, uint8 r_bytes);
+    // General LED (output)
+    static const uint16_t LED_BASE      = P1_BASE;
+    static const uint8_t LED_PIN        = BIT7;
 
-// reads and writes to device on bus at addr
-uint8 BSP_I2C_TransmitAndReceive(I2CBus bus, uint8 addr, uint8 * w_buf, uint8 w_bytes, uint8 * r_buf, uint8 r_bytes);
 
-// wait for STOP condition to be sent
-static void BSP_I2C_WaitForStopComplete(I2CBus bus);
+    /*
+    ** DRV10970 Pin Definitions
+    */
 
-// wait for START condition to be sent
-static void BSP_I2C_WaitForStartComplete(I2CBus bus);
+    // Variable duty cycle PWM signal (output)
+    static const uint16_t PWM_BASE      = P1_BASE;
+    static const uint8_t PWM_PIN        = BIT0;
 
-// send start condition for transmit
-static void BSP_I2C_TransmitStart(I2CBus bus);
+    // Brake Mode Setting signal (output)
+    static const uint16_t BRKMOD_BASE   = P3_BASE;
+    static const uint8_t BRKMOD_PIN     = BIT0;
 
-// send stop condition for transmit
-static void BSP_I2C_TransmitStop(I2CBus bus);
+    // Frequency Indicator signal (input)
+    static const uint16_t FG_BASE       = P1_BASE;
+    static const uint8_t FG_PIN         = BIT1;
 
-// send start condition for receive
-static void BSP_I2C_ReceiveStart(I2CBus bus);
+    // Motor direction control signal (output)
+    static const uint16_t FR_BASE       = P1_BASE;
+    static const uint8_t FR_PIN         = BIT2;
 
-// send stop condition for receive
-static void BSP_I2C_ReceiveStop(I2CBus bus);
+    // Lock indicator signal (input)
+    static const uint16_t RD_BASE       = P3_BASE;
+    static const uint8_t RD_PIN         = BIT1;
 
-static void BSP_I2C_SetAutoStopByteCount(I2CBus bus);
 
-static void BSP_I2C_Enable(I2CBus bus);
+    /*
+    **  BNO055 Pin Definitions
+    */
 
-static void BSP_I2C_Disable(I2CBus bus);
+    // Interrupt signal (input)
+    static const uint16_t INT_BASE      = P3_BASE;
+    static const uint8_t INT_PIN        = BIT2;
 
-static uint8 BSP_I2C_BusBusy(I2CBus bus);
+    // Reset signal (output)
+    static const uint16_t RST_BASE      = P4_BASE;
+    static const uint8_t RST_PIN        = BIT7;
+
+
+    /*
+    ** PWM Register Definitions
+    */
+
+    // Timer definitions
+    static const uint16_t PWM_TIM_BASE  = TA0_BASE;
+    static const uint16_t PWM_TIMER_PERIOD = 32678; // timer frequency of 32 kHz
+
+    /*
+    ** External Crystal Pin Definitions
+    */
+
+    static const uint16_t LFXT_BASE     = PJ_BASE;
+    static const uint8_t LFXT_PIN       = BIT4;
+
+    static const uint16_t HFXT_BASE     = PJ_BASE;
+    static const uint8_t HFXT_PIN       = BIT6;
+
+    /*
+     * Pins broken out
+     */
+
+    static GPIO::Pin gp1(GPIO_1_BASE, GPIO_1_PIN);
+    static GPIO::Pin gp2(GPIO_2_BASE, GPIO_2_PIN);
+    static GPIO::Pin gp3(GPIO_3_BASE, GPIO_3_PIN);
+    static GPIO::Pin gp4(GPIO_4_BASE, GPIO_4_PIN);
+
+    static GPIO::Pin ledPin(LED_BASE, LED_PIN);
+
+    static GPIO::Pin pwmPin(PWM_BASE, PWM_PIN);
+    static GPIO::Pin brakePin(BRKMOD_BASE, BRKMOD_PIN);
+    static GPIO::Pin rpmPin(FG_BASE, FG_PIN);
+    static GPIO::Pin dirPin(FR_BASE, FR_PIN);
+    static GPIO::Pin lockPin(RD_BASE, RD_PIN);
+
+    static GPIO::Pin intPin(INT_BASE, INT_PIN);
+    static GPIO::Pin rstPin(RST_BASE, RST_PIN);
+
+    static GPIO::Pin lfxtPin(LFXT_BASE, LFXT_PIN);
+    static GPIO::Pin hfxtPin(HFXT_BASE, HFXT_PIN);
+
+    /*
+     * Timer required for PWM output signal
+     */
+
+    static Timer::Timer_3 pwmTimer(PWM_TIM_BASE);
+}   // namespace BSP
 
 #endif /* BSP_H_ */
