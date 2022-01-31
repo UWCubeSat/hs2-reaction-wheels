@@ -37,6 +37,15 @@ namespace MSP430FR5994 {
             private:
                 uint16_t _baseAddress;
         };  // class Port
+
+        static Port p1(P1_BASE);
+        static Port p2(P2_BASE + 0x1);
+        static Port p3(P3_BASE);
+        static Port p4(P4_BASE + 0x1);
+        static Port p5(P5_BASE);
+        static Port p6(P6_BASE + 0x1);
+        static Port p7(P7_BASE);
+        static Port p8(P8_BASE + 0x1);
     }   // namespace GPIO
 }   // namespace MSP430FR5994
 #endif /* MSP430FR5994_GPIO_PORT_H_ */
