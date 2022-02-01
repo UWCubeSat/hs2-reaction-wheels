@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <msp430.h>
+
 #include "msp430fr5994-hsl.h"
 
 namespace MSP430FR5994 {
@@ -17,14 +18,14 @@ namespace MSP430FR5994 {
         class Timer_2 {
             public:
                 Timer_2(uint16_t baseAddress);
-                Register<uint16_t, 0x00> ctl;
-                Register<uint16_t, 0x02> cctl0;
-                Register<uint16_t, 0x04> cctl1;
-                Register<uint16_t, 0x10> r;
-                Register<uint16_t, 0x12> ccr0;
-                Register<uint16_t, 0x14> ccr1;
-                Register<uint16_t, 0x2E> iv;
-                Register<uint16_t, 0x20> ex0;
+                Register<uint16_t, OFS_TA0CTL> ctl;
+                Register<uint16_t, OFS_TA0CCTL0> cctl0;
+                Register<uint16_t, OFS_TA0CCTL1> cctl1;
+                Register<uint16_t, OFS_TA0R> r;
+                Register<uint16_t, OFS_TA0CCR0> ccr0;
+                Register<uint16_t, OFS_TA0CCR1> ccr1;
+                Register<uint16_t, OFS_TA0IV> iv;
+                Register<uint16_t, OFS_TA0EX0> ex0;
             private:
                 uint16_t _baseAddress;
         };  // class Timer_2
