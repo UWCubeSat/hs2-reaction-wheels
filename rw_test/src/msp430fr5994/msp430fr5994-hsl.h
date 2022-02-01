@@ -10,8 +10,8 @@
 
 #include <cstdint>
 
-//namespace MSP430FR5994 {
-    template <typename width>
+namespace MSP430FR5994 {
+    template <typename width, uint8_t off>
     struct RegisterBit {
         public:
             RegisterBit(uint16_t baseAddress, width bitMask) : _baseAddress{baseAddress}, _bitMask{bitMask} {}
@@ -24,30 +24,30 @@
             typedef volatile width & instance_ref_t;
             typedef volatile width * instance_ptr_t;
             inline instance_ref_t instance() {
-                return *((instance_ptr_t)(_baseAddress));
+                return *((instance_ptr_t) (_baseAddress + off));
             }
 
             uint16_t _baseAddress;
             width _bitMask;
     };
 
-    template <typename width>
-    inline void RegisterBit<width>::set() {
+    template <typename width, uint8_t off>
+    inline void RegisterBit<width, off>::set() {
         instance() |= _bitMask;
     }
 
-    template <typename width>
-    inline void RegisterBit<width>::clear() {
+    template <typename width, uint8_t off>
+    inline void RegisterBit<width, off>::clear() {
         instance() &= ~(_bitMask);
     }
 
-    template <typename width>
-    inline void RegisterBit<width>::toggle() {
+    template <typename width, uint8_t off>
+    inline void RegisterBit<width, off>::toggle() {
         instance() ^= _bitMask;
     }
 
-    template <typename width>
-    inline bool RegisterBit<width>::get() {
+    template <typename width, uint8_t off>
+    inline bool RegisterBit<width, off>::get() {
         return ((instance() & _bitMask) != 0);
     }
 
@@ -101,6 +101,6 @@
     inline void Register<width, off>::toggleBit(width bitMask) {
         instance() ^= bitMask;
     }
-//}
+}
 
 #endif /* MSP430FR5994_HSL_H_ */
