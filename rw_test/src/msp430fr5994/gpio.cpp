@@ -9,7 +9,7 @@
 
 #include "gpio.h"
 
-using namespace MSP430FR5994::GPIO;
+using namespace MSP430FR5994;
 
 #if !defined(__GPIO_USER_ISR__)
 
@@ -17,23 +17,23 @@ static const uint8_t PIN_COUNT = 8;
 static const uint8_t PORT_COUNT = 9;
 
 struct PinCallbackTable {
-   CallbackFuncPtr tbl[PIN_COUNT];
+   GPIO::CallbackFuncPtr tbl[PIN_COUNT];
 };
 
 static PinCallbackTable portCallbackTbl[PORT_COUNT] = {0};
 
-static inline void safeCall(CallbackFuncPtr func) {
+static inline void safeCall(GPIO::CallbackFuncPtr func) {
     if (func) {
         func();
     }
 }
 
-inline void AttachCallback(uint8_t pin, uint8_t port, CallbackFuncPtr func) {
-    portCallbackTbl[port].tbl[pin] = func;
+void GPIO::AttachCallback(uint8_t pinIdx, uint8_t portIdx, GPIO::CallbackFuncPtr func) {
+    portCallbackTbl[portIdx].tbl[pinIdx] = func;
 }
 
-inline void DetachCallback(uint8_t pin, uint8_t port) {
-    portCallbackTbl[port].tbl[pin] = nullptr;
+void GPIO::DetachCallback(uint8_t pinIdx, uint8_t portIdx) {
+    portCallbackTbl[portIdx].tbl[pinIdx] = nullptr;
 }
 
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)

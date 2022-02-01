@@ -39,8 +39,31 @@ namespace MSP430FR5994 {
            TERTIARY
         };
 
-        inline void AttachCallback(uint8_t, uint8_t, CallbackFuncPtr);
-        inline void DetachCallback(uint8_t, uint8_t);
+        enum class PortHandle {
+            P1 = 0x00,
+            P2 = 0x01,
+            P3 = 0x02,
+            P4 = 0x03,
+            P5 = 0x04,
+            P6 = 0x05,
+            P7 = 0x06,
+            P8 = 0x07,
+            PJ = 0x08
+        };
+
+        enum class PinHandle {
+            PIN0 = BIT0,
+            PIN1 = BIT1,
+            PIN2 = BIT2,
+            PIN3 = BIT3,
+            PIN4 = BIT4,
+            PIN5 = BIT5,
+            PIN6 = BIT6,
+            PIN7 = BIT7
+        };
+
+        void AttachCallback(uint8_t pinIdx, uint8_t portIdx, CallbackFuncPtr);
+        void DetachCallback(uint8_t pinIdx, uint8_t portIdx);
     }   // namespace GPIO
 }   // namespace MSP430FR5994
 #endif /* MSP430FR5994_GPIO_H_ */
