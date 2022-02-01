@@ -29,21 +29,16 @@ int main() {
     BSP::pwmTimer.ctl.set(TASSEL__SMCLK | MC__UP | TACLR);
 
     while (1) {
-        __delay_cycles(8000000);
-        BSP::pwmTimer.ccr1.set(INCREMENT);
-        __delay_cycles(8000000);
-        BSP::pwmTimer.ccr1.set(2 * INCREMENT);
-        __delay_cycles(8000000);
-        BSP::pwmTimer.ccr1.set(3 * INCREMENT);
-        __delay_cycles(8000000);
+        for (uint8_t i = 1; i <= 3; i++) {
+            BSP::pwmTimer.ccr1.set(i * INCREMENT);
+            __delay_cycles(4000000);
+        }
         BSP::pwmTimer.ccr1.set(BSP::PWM_TIMER_PERIOD - 1);
-        __delay_cycles(16000000);
-        BSP::pwmTimer.ccr1.set(3 * INCREMENT);
         __delay_cycles(8000000);
-        BSP::pwmTimer.ccr1.set(2 * INCREMENT);
-        __delay_cycles(8000000);
-        BSP::pwmTimer.ccr1.set(INCREMENT);
-        __delay_cycles(8000000);
+        for (uint8_t i = 3; i >= 3; i--) {
+            BSP::pwmTimer.ccr1.set(i * INCREMENT);
+            __delay_cycles(4000000);
+        }
         BSP::pwmTimer.ccr1.set(MIN_DUTY_CYCLE);
     }
 }
