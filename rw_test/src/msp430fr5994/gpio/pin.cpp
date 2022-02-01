@@ -19,11 +19,11 @@ static inline uint8_t countBitsInByte(uint8_t s) {
 }
 
 Pin::Pin(uint16_t baseAddress, uint8_t pinMask)
-: in(baseAddress + OFS_P1IN, pinMask), out(baseAddress + OFS_P1OUT, pinMask),
-  dir(baseAddress + OFS_P1DIR, pinMask), ren(baseAddress + OFS_P1REN, pinMask),
-  sel0(baseAddress + OFS_P1SEL0, pinMask), sel1(baseAddress + OFS_P1SEL1, pinMask),
-  selc(baseAddress + OFS_P1SELC, pinMask), ies(baseAddress + OFS_P1IES, pinMask),
-  ie(baseAddress + OFS_P1IE, pinMask), ifg(baseAddress + OFS_P1IFG, pinMask) {
+: in(baseAddress, pinMask), out(baseAddress, pinMask),
+  dir(baseAddress, pinMask), ren(baseAddress, pinMask),
+  sel0(baseAddress, pinMask), sel1(baseAddress, pinMask),
+  selc(baseAddress, pinMask), ies(baseAddress, pinMask),
+  ie(baseAddress, pinMask), ifg(baseAddress, pinMask) {
     _pinMask = pinMask;
     _pinIdx = countBitsInByte(pinMask);
     _baseAddress = baseAddress;
