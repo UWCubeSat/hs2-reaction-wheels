@@ -9,7 +9,7 @@
 
 using namespace MSP430FR5994::GPIO;
 
-static uint16_t portAddresses[8] = {
+static uint16_t portAddresses[9] = {
     P1_BASE,
     P2_BASE + 0x1,
     P3_BASE,
@@ -17,7 +17,8 @@ static uint16_t portAddresses[8] = {
     P5_BASE,
     P6_BASE + 0x1,
     P7_BASE,
-    P8_BASE + 0x1
+    P8_BASE + 0x1,
+    PJ_BASE
 };
 
 static inline uint8_t countBitsInByte(uint8_t s) {
@@ -37,7 +38,7 @@ Pin::Pin(uint8_t portHandle, uint8_t pinMask)
   ie(portAddresses[portHandle], pinMask), ifg(portAddresses[portHandle], pinMask) {
     _pinMask = pinMask;
     _pinIdx = countBitsInByte(pinMask);
-    _baseAddress = portAddresses[(uint16_t)portHandle];
+    _baseAddress = portAddresses[portHandle];
     _portIdx = portHandle;
 }
 
