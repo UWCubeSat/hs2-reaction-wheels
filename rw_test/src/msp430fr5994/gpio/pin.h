@@ -24,16 +24,16 @@ namespace MSP430FR5994 {
                 void EnableInterrupt(InterruptSource src, CallbackFuncPtr func);
                 void DisableInterrupt();
 
-                RegisterBit<uint8_t> in;
-                RegisterBit<uint8_t> out;
-                RegisterBit<uint8_t> dir;
-                RegisterBit<uint8_t> ren;
-                RegisterBit<uint8_t> sel0;
-                RegisterBit<uint8_t> sel1;
-                RegisterBit<uint8_t> selc;
-                RegisterBit<uint8_t> ies;
-                RegisterBit<uint8_t> ie;
-                RegisterBit<uint8_t> ifg;
+                RegisterBit<uint8_t, OFS_P1IN> in;
+                RegisterBit<uint8_t, OFS_P1OUT> out;
+                RegisterBit<uint8_t, OFS_P1DIR> dir;
+                RegisterBit<uint8_t, OFS_P1REN> ren;
+                RegisterBit<uint8_t, OFS_P1SEL0> sel0;
+                RegisterBit<uint8_t, OFS_P1SEL1> sel1;
+                RegisterBit<uint8_t, OFS_P1SELC> selc;
+                RegisterBit<uint8_t, OFS_P1IES> ies;
+                RegisterBit<uint8_t, OFS_P1IE> ie;
+                RegisterBit<uint8_t, OFS_P1IFG> ifg;
             private:
                 uint16_t _baseAddress;
                 uint8_t _pinMask;
