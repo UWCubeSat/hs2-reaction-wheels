@@ -47,7 +47,8 @@ namespace MSP430FR5994 {
             P5 = 0x04,
             P6 = 0x05,
             P7 = 0x06,
-            P8 = 0x07
+            P8 = 0x07,
+            PJ = 0x08
         };
 
         enum class PinHandle {
