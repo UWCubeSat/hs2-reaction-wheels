@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <msp430.h>
 
+#include "msp430fr5994/gpio.h"
 #include "msp430fr5994/gpio/pin.h"
 #include "msp430fr5994/timer.h"
 
@@ -38,23 +39,23 @@ namespace BSP {
     */
 
     // GPIO 1 (inout)
-    static const uint16_t GPIO_1_BASE   = P1_BASE;
+    static const uint8_t GPIO_1_BASE    = static_cast<uint8_t>(GPIO::PortHandle::P1);
     static const uint8_t GPIO_1_PIN     = BIT6;
 
     // GPIO 2 (inout)
-    static const uint16_t GPIO_2_BASE   = P3_BASE;
+    static const uint8_t GPIO_2_BASE    = static_cast<uint8_t>(GPIO::PortHandle::P3);
     static const uint8_t GPIO_2_PIN     = BIT7;
 
     // GPIO 3 (inout)
-    static const uint16_t GPIO_3_BASE   = P3_BASE;
+    static const uint8_t GPIO_3_BASE    = static_cast<uint8_t>(GPIO::PortHandle::P3);
     static const uint8_t GPIO_3_PIN     = BIT6;
 
     // GPIO 4 (inout)
-    static const uint16_t GPIO_4_BASE   = P3_BASE;
+    static const uint8_t GPIO_4_BASE    = static_cast<uint8_t>(GPIO::PortHandle::P4);
     static const uint8_t GPIO_4_PIN     =  BIT5;
 
     // General LED (output)
-    static const uint16_t LED_BASE      = P1_BASE;
+    static const uint8_t LED_BASE       = static_cast<uint8_t>(GPIO::PortHandle::P1);
     static const uint8_t LED_PIN        = BIT7;
 
 
@@ -63,23 +64,23 @@ namespace BSP {
     */
 
     // Variable duty cycle PWM signal (output)
-    static const uint16_t PWM_BASE      = P1_BASE;
+    static const uint8_t PWM_BASE       = static_cast<uint8_t>(GPIO::PortHandle::P1);
     static const uint8_t PWM_PIN        = BIT0;
 
     // Brake Mode Setting signal (output)
-    static const uint16_t BRKMOD_BASE   = P3_BASE;
+    static const uint8_t BRKMOD_BASE    = static_cast<uint8_t>(GPIO::PortHandle::P3);
     static const uint8_t BRKMOD_PIN     = BIT0;
 
     // Frequency Indicator signal (input)
-    static const uint16_t FG_BASE       = P1_BASE;
+    static const uint8_t FG_BASE        = static_cast<uint8_t>(GPIO::PortHandle::P1);
     static const uint8_t FG_PIN         = BIT1;
 
     // Motor direction control signal (output)
-    static const uint16_t FR_BASE       = P1_BASE;
+    static const uint8_t FR_BASE        = static_cast<uint8_t>(GPIO::PortHandle::P1);
     static const uint8_t FR_PIN         = BIT2;
 
     // Lock indicator signal (input)
-    static const uint16_t RD_BASE       = P3_BASE;
+    static const uint8_t RD_BASE        = static_cast<uint8_t>(GPIO::PortHandle::P3);
     static const uint8_t RD_PIN         = BIT1;
 
 
@@ -88,11 +89,11 @@ namespace BSP {
     */
 
     // Interrupt signal (input)
-    static const uint16_t INT_BASE      = P3_BASE;
+    static const uint8_t INT_BASE       = static_cast<uint8_t>(GPIO::PortHandle::P3);
     static const uint8_t INT_PIN        = BIT2;
 
     // Reset signal (output)
-    static const uint16_t RST_BASE      = P4_BASE;
+    static const uint8_t RST_BASE       = static_cast<uint8_t>(GPIO::PortHandle::P4);
     static const uint8_t RST_PIN        = BIT7;
 
 
@@ -101,17 +102,17 @@ namespace BSP {
     */
 
     // Timer definitions
-    static const uint16_t PWM_TIM_BASE  = TA0_BASE;
+    static const uint8_t PWM_TIM_BASE   = static_cast<uint8_t>(TA0_BASE);
     static const uint16_t PWM_TIMER_PERIOD = 533; // timer frequency of ~15 kHz when using SMCLK @ 8 MHz
 
     /*
     ** External Crystal Pin Definitions
     */
 
-    static const uint16_t LFXT_BASE     = PJ_BASE;
+    static const uint8_t LFXT_BASE      = static_cast<uint8_t>(GPIO::PortHandle::PJ);
     static const uint8_t LFXT_PIN       = BIT4;
 
-    static const uint16_t HFXT_BASE     = PJ_BASE;
+    static const uint8_t HFXT_BASE      = static_cast<uint8_t>(GPIO::PortHandle::PJ);
     static const uint8_t HFXT_PIN       = BIT6;
 
     /*
