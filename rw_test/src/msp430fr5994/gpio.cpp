@@ -29,11 +29,11 @@ static inline void safeCall(CallbackFuncPtr func) {
     }
 }
 
-inline void AttachCallback(uint8_t pin, uint8_t port, CallbackFuncPtr func) {
+void AttachCallback(uint8_t pin, uint8_t port, CallbackFuncPtr func) {
     portCallbackTbl[port].tbl[pin] = func;
 }
 
-inline void DetachCallback(uint8_t pin, uint8_t port) {
+void DetachCallback(uint8_t pin, uint8_t port) {
     portCallbackTbl[port].tbl[pin] = nullptr;
 }
 

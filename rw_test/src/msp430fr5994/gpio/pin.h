@@ -17,12 +17,13 @@ namespace MSP430FR5994 {
     namespace GPIO {
         class Pin {
             public:
-                Pin(uint16_t baseAddress, uint8_t pinMask);
+                Pin(uint8_t portHandle, uint8_t pinMask);
                 void SetMode(Direction dir);
                 void SetFunction(Function func);
                 void SetResistor(Resistor res);
                 void EnableInterrupt(InterruptSource src, CallbackFuncPtr func);
                 void DisableInterrupt();
+                inline uint8_t Port() { return _portIdx; }
 
                 RegisterBit<uint8_t, OFS_P1IN> in;
                 RegisterBit<uint8_t, OFS_P1OUT> out;
@@ -36,6 +37,7 @@ namespace MSP430FR5994 {
                 RegisterBit<uint8_t, OFS_P1IFG> ifg;
             private:
                 uint16_t _baseAddress;
+                uint8_t _portIdx;
                 uint8_t _pinMask;
                 uint8_t _pinIdx;
         };  // class Pin
