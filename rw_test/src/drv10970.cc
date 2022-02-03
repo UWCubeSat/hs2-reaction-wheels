@@ -92,3 +92,15 @@ void DRV10970::SetPWMDutyCycle(uint8_t dutyCycle) {
         _pwmTimer.ccr1.set((uint16_t)((dutyCycle * BSP::PWM_TIMER_PERIOD) / 100 - 1));
     }
 }
+
+void DRV10970::SetPWMDutyCycleRaw(uint16_t dutyCycle) {
+    if (dutyCycle > BSP::PWM_TIMER_PERIOD - 1) {
+        dutyCycle = BSP::PWM_TIMER_PERIOD - 1;
+    }
+    // don't worry about dutyCycle < 0 since this is an unsigned short
+    if (dutyCycle == 0) {
+        _pwmTimer.ccr1.set(0);
+    } else {
+        _pwmTimer.ccr1.set(dutyCycle);
+    }
+}
