@@ -91,8 +91,11 @@ class DRV10970 {
         // update PWM frequency
         void SetPWMFrequency(uint16_t frequency);
 
-        // update PWM duty cycle
+        // update PWM duty cycle as a percent
         void SetPWMDutyCycle(uint8_t duty_cycle);
+
+        // update PWM duty cycle
+        void SetPWMDutyCycleRaw(uint16_t duty_cycle);
 
         // get the RPM of the motor
         inline float GetRPM() { return _rpm; }
