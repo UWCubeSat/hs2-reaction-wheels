@@ -86,7 +86,12 @@ void DRV10970::SetPWMDutyCycle(uint8_t dutyCycle) {
         dutyCycle = 100;
     }
     // don't worry about dutyCycle < 0 since this is an unsigned byte
+    if (dutyCycle < 10) {
+        // anything less than 10% is interpreted as 10%
+        dutyCycle = 10;
+    }
     if (dutyCycle == 0) {
+        // this puts the device in sleep mode
         _pwmTimer.ccr1.set(0);
     } else {
         _pwmTimer.ccr1.set((uint16_t)((dutyCycle * BSP::PWM_TIMER_PERIOD) / 100 - 1));
@@ -96,6 +101,9 @@ void DRV10970::SetPWMDutyCycle(uint8_t dutyCycle) {
 void DRV10970::SetPWMDutyCycleRaw(uint16_t dutyCycle) {
     if (dutyCycle > BSP::PWM_TIMER_PERIOD - 1) {
         dutyCycle = BSP::PWM_TIMER_PERIOD - 1;
+    }
+    if (dutyCycle < BSP::PWM_TIMER_PERIOD / 10) {
+        dutyCycle = BSP::PWM_TIMER_PERIOD / 10;
     }
     // don't worry about dutyCycle < 0 since this is an unsigned short
     if (dutyCycle == 0) {
