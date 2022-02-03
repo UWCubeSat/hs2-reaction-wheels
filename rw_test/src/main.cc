@@ -90,7 +90,7 @@ int main() {
         }
         if (updateDutyCycle) {
             updateDutyCycle = false;
-            motor.SetPWMDutyCycleRaw(dutyCycle);
+            motor.SetPWMDutyCycle(dutyCycle);
         }
         __bis_SR_register(LPM0_bits | GIE);
     }
