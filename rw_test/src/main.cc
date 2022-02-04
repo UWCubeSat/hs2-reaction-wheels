@@ -35,7 +35,7 @@ int main() {
         }
         BSP::pwmTimer.ccr1.set(BSP::PWM_TIMER_PERIOD - 1);
         __delay_cycles(8000000);
-        for (uint8_t i = 3; i >= 3; i--) {
+        for (uint8_t i = 3; i >= 1; i--) {
             BSP::pwmTimer.ccr1.set(i * INCREMENT);
             __delay_cycles(4000000);
         }
