@@ -103,7 +103,7 @@ namespace BSP {
 
     // Timer definitions
     static const uint16_t PWM_TIM_BASE   = TA0_BASE;
-    static const uint16_t PWM_TIMER_PERIOD = 533; // timer frequency of ~15 kHz when using SMCLK @ 8 MHz
+    static const uint16_t PWM_TIMER_PERIOD = 400; // timer frequency of ~20 kHz when using SMCLK @ 8 MHz
 
     /*
     ** External Crystal Pin Definitions
