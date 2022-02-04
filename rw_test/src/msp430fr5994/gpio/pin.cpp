@@ -9,6 +9,18 @@
 
 using namespace MSP430FR5994::GPIO;
 
+static uint16_t portAddresses[9] = {
+    P1_BASE,
+    P2_BASE + 0x1,
+    P3_BASE,
+    P4_BASE + 0x1,
+    P5_BASE,
+    P6_BASE + 0x1,
+    P7_BASE,
+    P8_BASE + 0x1,
+    PJ_BASE
+};
+
 static inline uint8_t countBitsInByte(uint8_t s) {
     uint8_t count = 0;
     while (s) {
@@ -18,15 +30,16 @@ static inline uint8_t countBitsInByte(uint8_t s) {
     return count;
 }
 
-Pin::Pin(uint16_t baseAddress, uint8_t pinMask)
-: in(baseAddress, pinMask), out(baseAddress, pinMask), dir(baseAddress, pinMask),
-  ren(baseAddress, pinMask), sel0(baseAddress, pinMask), sel1(baseAddress, pinMask),
-  selc(baseAddress, pinMask), ies(baseAddress, pinMask), ie(baseAddress, pinMask),
-  ifg(baseAddress, pinMask)
-{
+Pin::Pin(uint8_t portHandle, uint8_t pinMask)
+: in(portAddresses[portHandle], pinMask), out(portAddresses[portHandle], pinMask),
+  dir(portAddresses[portHandle], pinMask), ren(portAddresses[portHandle], pinMask),
+  sel0(portAddresses[portHandle], pinMask), sel1(portAddresses[portHandle], pinMask),
+  selc(portAddresses[portHandle], pinMask), ies(portAddresses[portHandle], pinMask),
+  ie(portAddresses[portHandle], pinMask), ifg(portAddresses[portHandle], pinMask) {
     _pinMask = pinMask;
     _pinIdx = countBitsInByte(pinMask);
-    _baseAddress = baseAddress;
+    _baseAddress = portAddresses[portHandle];
+    _portIdx = portHandle;
 }
 
 void Pin::SetMode(Direction mode) {
@@ -94,11 +107,13 @@ void Pin::EnableInterrupt(InterruptSource src, CallbackFuncPtr func) {
     } else {
         ies.clear();
     }
+    AttachCallback(_portIdx, _portIdx, func);
 }
 
 void Pin::DisableInterrupt() {
     ie.clear();
     ies.clear();
+    DetachCallback(_pinIdx, _portIdx);
 }
 
 

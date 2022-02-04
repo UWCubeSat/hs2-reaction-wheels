@@ -13,10 +13,10 @@
 using namespace MSP430FR5994::GPIO;
 
 Port::Port(uint16_t baseAddress)
-: in(baseAddress), out(baseAddress), dir(baseAddress),
-  ren(baseAddress), sel0(baseAddress), sel1(baseAddress),
-  selc(baseAddress), ies(baseAddress), ie(baseAddress),
-  ifg(baseAddress) { }
+: in(baseAddress + OFS_P1IN), out(baseAddress + OFS_P1OUT), dir(baseAddress + OFS_P1DIR),
+  ren(baseAddress + OFS_P1REN), sel0(baseAddress + OFS_P1SEL0), sel1(baseAddress + OFS_P1SEL1),
+  selc(baseAddress + OFS_P1SELC), ies(baseAddress + OFS_P1IES), ie(baseAddress + OFS_P1IE),
+  ifg(baseAddress + OFS_P1IFG) { }
 
 void Port::SetMode(Direction mode, uint8_t pinMask) {
     switch (mode) {
