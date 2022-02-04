@@ -9,6 +9,7 @@
  */
 
 #include <cstdint>
+//#include <functional>
 #include <msp430.h>
 #include "bsp.h"
 #include "msp430fr5994/gpio.h"
@@ -20,8 +21,7 @@
 using namespace MSP430FR5994;
 
 DRV10970::DRV10970(GPIO::Pin &brakePin, GPIO::Pin &rpmPin, GPIO::Pin &dirPin,
-                   GPIO::Pin &lockPin, GPIO::Pin &pwmPin, Timer::Timer_3 &pwmTimer,
-                   GPIO::CallbackFuncPtr lockCallback, GPIO::CallbackFuncPtr rpmCallback)
+                   GPIO::Pin &lockPin, GPIO::Pin &pwmPin, Timer::Timer_3 &pwmTimer)
 : _brakePin(brakePin), _rpmPin(rpmPin), _dirPin(dirPin), _lockPin(lockPin),
   _pwmPin(pwmPin), _pwmTimer(pwmTimer) {
 
@@ -29,12 +29,14 @@ DRV10970::DRV10970(GPIO::Pin &brakePin, GPIO::Pin &rpmPin, GPIO::Pin &dirPin,
     _brakePin.SetMode(GPIO::Direction::OUTPUT);
 
     _rpmPin.SetMode(GPIO::Direction::INPUT);
-    _rpmPin.EnableInterrupt(GPIO::InterruptSource::RISING, rpmCallback);
+//    auto rpmFuncPtr = std::bind(&DRV10970::_monitorRPM, this, this);
+//    _rpmPin.EnableInterrupt<rpmFuncPtr>(GPIO::InterruptSource::RISING);
 
     _dirPin.SetMode(GPIO::Direction::OUTPUT);
 
     _lockPin.SetMode(GPIO::Direction::INPUT);
-    _lockPin.EnableInterrupt(GPIO::InterruptSource::RISING, lockCallback);
+//    auto lockFuncPtr = std::bind(&DRV10970::_monitorLock, this, this);
+//    _lockPin.EnableInterrupt<lockFuncPtr>(GPIO::InterruptSource::RISING);
 
     _pwmPin.SetMode(GPIO::Direction::OUTPUT);
     // sets the pin as an output for the capture/compare registers
@@ -42,7 +44,7 @@ DRV10970::DRV10970(GPIO::Pin &brakePin, GPIO::Pin &rpmPin, GPIO::Pin &dirPin,
 
     // Initialize DRV10970 output values
     _pwmTimer.ccr0.set(BSP::PWM_TIMER_PERIOD - 1);
-    SetPWMDutyCycle(0);
+    SetPWMDutyCycle(10);
     DisableBrake();
     SetDirectionForward();
 }
@@ -110,5 +112,19 @@ void DRV10970::SetPWMDutyCycleRaw(uint16_t dutyCycle) {
         _pwmTimer.ccr1.set(0);
     } else {
         _pwmTimer.ccr1.set(dutyCycle);
+    }
+}
+
+void DRV10970::_monitorRPM() {
+    static const uint8_t POLES = 2;
+    static const uint8_t ROTS_TO_COUNT = 3;
+    static const uint8_t NUM_PULSES = POLES * ROTS_TO_COUNT;
+    static const uint32_t MS_TO_RPM = 60000 * ROTS_TO_COUNT;
+    _pulseCount++;
+    if (_pulseCount == NUM_PULSES) {
+       uint64_t currentTime = BSP::MET();
+       uint64_t elapsedTime = currentTime - _lastRotTime;
+       _rpm = MS_TO_RPM / elapsedTime;
+       _pulseCount = 0;
     }
 }

@@ -58,8 +58,7 @@ class DRV10970 {
         };
 
         // Constructor
-        DRV10970(GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, Timer::Timer_3&,
-                 GPIO::CallbackFuncPtr, GPIO::CallbackFuncPtr);
+        DRV10970(GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, GPIO::Pin&, Timer::Timer_3&);
 
         // Delete copy constructor
         DRV10970(const DRV10970 &) = delete;
@@ -86,7 +85,7 @@ class DRV10970 {
         void ToggleDirection();
 
         // get how many times a lock event has occurred
-        inline uint8_t GetLockEventCount() { return _lock_events; }
+        inline uint8_t GetLockEventCount() { return _lockEvents; }
 
         // update PWM frequency
         void SetPWMFrequency(uint16_t frequency);
@@ -101,13 +100,14 @@ class DRV10970 {
         inline float GetRPM() { return _rpm; }
 
     private:
-        const uint8_t POLES = 2;
-        const float MIL_TO_MIN = 60000;
-        const uint8_t ROTS_TO_COUNT = 3;
+        void _monitorRPM();
+
+        void _monitorLock();
+
         Direction _dir;
 
-        uint32_t _lock_events;  // number of detected lock events
-        uint32_t _error_count;
+        uint32_t _lockEvents;  // number of detected lock events
+        uint16_t _errorCount;
 
         GPIO::Pin &_brakePin;
         GPIO::Pin &_rpmPin;
@@ -117,8 +117,8 @@ class DRV10970 {
         Timer::Timer_3 &_pwmTimer;
 
         float _rpm;
-        unsigned long _lastRotTime;
-        volatile int _pulseCount;
+        uint64_t _lastRotTime;
+        volatile uint8_t _pulseCount;
 
 
 };
