@@ -15,39 +15,79 @@
 
 namespace MSP430FR5994 {
     namespace eUSCI {
-
-        enum class EUSCIHandle {
-            EUSCI_A0 = 0x00,
-            EUSCI_A1 = 0x01,
-            EUSCI_A2 = 0x02,
-            EUSCI_A3 = 0x03,
-            EUSCI_B0 = 0x04,
-            EUSCI_B1 = 0x05,
-            EUSCI_B2 = 0x06,
-            EUSCI_B3 = 0x07,
+        enum class eUSCIHandle {
+            A0 = 0x00,
+            A1 = 0x01,
+            A2 = 0x02,
+            A3 = 0x03,
+            B0 = 0x04,
+            B1 = 0x05,
+            B2 = 0x06,
+            B3 = 0x07,
         };
 
-        class EUSCI_A {
-            public:
-//                Timer_2(uint16_t baseAddress);
-//                Register<uint16_t, OFS_TA0CTL> ctl;
-//                Register<uint16_t, OFS_TA0CCTL0> cctl0;
-//                Register<uint16_t, OFS_TA0CCTL1> cctl1;
-//                Register<uint16_t, OFS_TA0R> r;
-//                Register<uint16_t, OFS_TA0CCR0> ccr0;
-//                Register<uint16_t, OFS_TA0CCR1> ccr1;
-//                Register<uint16_t, OFS_TA0IV> iv;
-//                Register<uint16_t, OFS_TA0EX0> ex0;
-            private:
-                uint16_t _baseAddress;
-        };  // class Timer_2
+        // ugly casts since we want clean type conversion
+        enum class I2CHandle {
+            I2C0 = static_cast<uint8_t>(eUSCIHandle::B0),
+            I2C1 = static_cast<uint8_t>(eUSCIHandle::B1),
+            I2C2 = static_cast<uint8_t>(eUSCIHandle::B2),
+            I2C3 = static_cast<uint8_t>(eUSCIHandle::B3)
+        };
 
-        class EUSCI_B : public Timer_2 {
+        enum class I2CMode {
+            PRIMARY = 0x00,
+            SECONDARY = 0x01
+        };
+
+        // ugly casts since we want clean type conversion
+        enum class SPIHandle {
+            SPI0 = static_cast<uint8_t>(eUSCIHandle::A0),
+            SPI1 = static_cast<uint8_t>(eUSCIHandle::A1),
+            SPI2 = static_cast<uint8_t>(eUSCIHandle::A2),
+            SPI3 = static_cast<uint8_t>(eUSCIHandle::A3),
+            SPI4 = static_cast<uint8_t>(eUSCIHandle::B0),
+            SPI5 = static_cast<uint8_t>(eUSCIHandle::B1),
+            SPI6 = static_cast<uint8_t>(eUSCIHandle::B2),
+            SPI7 = static_cast<uint8_t>(eUSCIHandle::B3)
+        };
+
+        enum class UARTHandle {
+            UART0 = static_cast<uint8_t>(eUSCIHandle::A0),
+            UART1 = static_cast<uint8_t>(eUSCIHandle::A1),
+            UART2 = static_cast<uint8_t>(eUSCIHandle::A2),
+            UART3 = static_cast<uint8_t>(eUSCIHandle::A3),
+        };
+
+        // having an entire class for this seems overkill, but I want to be able to
+        // read and write to a "global constant" availability table for each module
+        // that is only accessible to the various eUSCI modules
+        class eUSCIBase {
             public:
-//                Timer_3(uint16_t baseAddress);
-//                Register<uint16_t, 0x06> cctl2;
-//                Register<uint16_t, 0x16> ccr2;
-        };  // class Timer_3
-    }   // namespace Timer
+                eUSCIBase(eUSCIHandle handle) : _baseHandle(handle)
+            protected:
+                bool IsAvailable();
+
+                bool _attached;
+                uint32_t _totalTxBytes;
+                uint32_t _totalRxBytes;
+                uint32_t _errorCount;
+                eUSCIHandle _baseHandle;
+
+                static uint8_t _inUseTbl;
+                static uint16_t const _eusciBaseAddresses[8];
+        };
+
+        uint8_t eUSCIBase::_inUseTbl = 0;
+        uint16_t const eUSCIBase::_eusciBaseAddresses[8] = {
+            EUSCI_A0_BASE,
+            EUSCI_A1_BASE,
+            EUSCI_A2_BASE,
+            EUSCI_A3_BASE,
+            EUSCI_B0_BASE,
+            EUSCI_B1_BASE,
+            EUSCI_B2_BASE,
+            EUSCI_B3_BASE
+        };
+    }   // namespace eUSCI
 }   // namespace MSP430FR5994
 #endif /* MSP430FR5994_TIMER_H_ */
