@@ -51,6 +51,7 @@ namespace MSP430FR5994 {
             SPI7 = static_cast<uint8_t>(eUSCIHandle::B3)
         };
 
+        // ugly casts since we want clean type conversion
         enum class UARTHandle {
             UART0 = static_cast<uint8_t>(eUSCIHandle::A0),
             UART1 = static_cast<uint8_t>(eUSCIHandle::A1),
@@ -63,30 +64,34 @@ namespace MSP430FR5994 {
         // that is only accessible to the various eUSCI modules
         class eUSCIBase {
             public:
-                eUSCIBase(eUSCIHandle handle) : _baseHandle(handle)
+                eUSCIBase(eUSCIHandle handle) : _baseHandle(static_cast<uint8_t>(handle)) { }
             protected:
-                bool IsAvailable();
+                inline bool ClaimBus() {
+                    _attached = !(_inUseTbl & (0x1 << _baseHandle));
+                    if (_attached) {
+                        _inUseTbl |= (0x1 << _baseHandle);
+                    }
+                    return _attached;
+                }
+
+                inline void ReleaseBus() {
+                    if (_attached) {
+                        _inUseTbl &= ~(0x1 << _baseHandle);
+                    }
+                }
+
+                inline uint16_t BaseAddress() {
+                    return _eusciBaseAddresses[_baseHandle];
+                }
 
                 bool _attached;
                 uint32_t _totalTxBytes;
                 uint32_t _totalRxBytes;
                 uint32_t _errorCount;
-                eUSCIHandle _baseHandle;
+                uint8_t _baseHandle;
 
                 static uint8_t _inUseTbl;
                 static uint16_t const _eusciBaseAddresses[8];
-        };
-
-        uint8_t eUSCIBase::_inUseTbl = 0;
-        uint16_t const eUSCIBase::_eusciBaseAddresses[8] = {
-            EUSCI_A0_BASE,
-            EUSCI_A1_BASE,
-            EUSCI_A2_BASE,
-            EUSCI_A3_BASE,
-            EUSCI_B0_BASE,
-            EUSCI_B1_BASE,
-            EUSCI_B2_BASE,
-            EUSCI_B3_BASE
         };
     }   // namespace eUSCI
 }   // namespace MSP430FR5994

@@ -19,10 +19,17 @@ namespace MSP430FR5994 {
             public:
                 /*
                  * Construct a new I2C instance which represents the underlying
-                 * I2C module specified by handle in either Primary or Secondary mode.
+                 * I2C module specified by handle in Secondary mode with ownAddress.
                  * If successful, the Begin() function will return true.
                  */
-                I2C(I2CHandle handle, I2CMode mode);
+//                I2C(I2CHandle handle, uint8_t ownAddress);
+
+                /*
+                 * Construct a new I2C instance which represents the underlying
+                 * I2C module specified by handle in Primary mode.
+                 * If successful, the Begin() function will return true.
+                 */
+                I2C(I2CHandle handle);
 
                 /*
                  * Relinquish the handle of the underlying I2C module on object
@@ -40,14 +47,12 @@ namespace MSP430FR5994 {
                 I2C& operator=(I2C &&other) = delete;
                 I2C& operator=(const I2C &other) = delete;
 
-                bool Begin();
-                void Write(uint8_t data, uint8_t addr);
-                void Write(uint8_t *buf, size_t n, uint8_t addr);
-                uint8_t Read(uint8_t addr);
-                void Read(uint8_t *buf, size_t n, uint8_t addr);
-                void End();
+                void Write(uint8_t *buf, uint16_t n, uint8_t addr, bool autoStop);
+                void Read(uint8_t *buf, uint16_t n, uint8_t addr, bool autoStop);
+                void CombinedWriteRead(uint8_t *rxBuf, uint16_t rxBytes, uint8_t *txBuf, uint16_t txBytes, uint8_t addr);
 
-                /* TODO: this generates many different instances of the Register class template, so
+                /*
+                 * TODO: this generates many different instances of the Register class template, so
                  * it will likely be better practice in the future to pass the address into
                  * the constructor and store it as a data member. Need to benchmark the size
                  * of the resultant program.
@@ -77,33 +82,15 @@ namespace MSP430FR5994 {
                 Register<uint16_t, OFS_UCB0IV> iv;
 
             private:
-                uint8_t _ownI2CAddress;
+                uint8_t _ownAddress;
                 I2CMode _mode;
-                I2CHandle _handle;
-
-//                Register<uint16_t> ctlw0;
-//                Register<uint8_t> ctl0;
-//                Register<uint8_t> ctl1;
-//                Register<uint16_t> ctlw1;
-//                Register<uint16_t> brw;
-//                Register<uint8_t> br0;
-//                Register<uint8_t> br1;
-//                Register<uint16_t> statw;
-//                Register<uint8_t> stat;
-//                Register<uint8_t> bcnt;
-//                Register<uint16_t> tbcnt;
-//                Register<uint8_t> rx;
-//                Register<uint8_t> tx;
-//                Register<uint16_t> oaddr0;
-//                Register<uint16_t> oaddr1;
-//                Register<uint16_t> oaddr2;
-//                Register<uint16_t> oaddr3;
-//                Register<uint16_t> rxaddr;
-//                Register<uint16_t> addrmask;
-//                Register<uint16_t> saddr;
-//                Register<uint16_t> ie;
-//                Register<uint16_t> ifg;
-//                Register<uint16_t> iv;
+                uint8_t _handle;
+                uint8_t _lastOpResult;
+                inline void SetAutoStopBytes(uint16_t n) {
+                    ctlw0.setBit(UCSWRST);
+                    tbcnt.set(n);
+                    ctlw0.clearBit(UCSWRST);
+                }
         };
     } /* namespace eUSCI */
 } /* namespace MSP430FR5994 */

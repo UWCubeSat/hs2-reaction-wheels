@@ -11,8 +11,17 @@
 
 using namespace MSP430FR5994::eUSCI;
 
-bool eUSCIBase::IsAvailable() {
-    int handle = static_cast<int>(_baseHandle);
-    return static_cast<bool>((_inUseTbl & (0x1 << handle)));
-}
+uint8_t eUSCIBase::_inUseTbl = 0;
+uint16_t const eUSCIBase::_eusciBaseAddresses[8] = {
+    EUSCI_A0_BASE,
+    EUSCI_A1_BASE,
+    EUSCI_A2_BASE,
+    EUSCI_A3_BASE,
+    EUSCI_B0_BASE,
+    EUSCI_B1_BASE,
+    EUSCI_B2_BASE,
+    EUSCI_B3_BASE
+};
+
+
 
